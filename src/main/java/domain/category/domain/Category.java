@@ -1,6 +1,6 @@
 package domain.category.domain;
 
-import domain.user.doamin.User;
+import domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

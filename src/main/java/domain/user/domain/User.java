@@ -1,4 +1,4 @@
-package domain.user.doamin;
+package domain.user.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

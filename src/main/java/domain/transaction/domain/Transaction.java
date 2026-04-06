@@ -1,6 +1,6 @@
-package domain.transaction.doamin;
+package domain.transaction.domain;
 
-import domain.user.doamin.User;
+import domain.user.domain.User;
 import domain.notification.domain.NotificationSource;
 import domain.category.domain.Category;
 import jakarta.persistence.*;

@@ -1,6 +1,6 @@
-package domain.recurring.doamin;
+package domain.recurring.domain;
 
-import domain.user.doamin.User;
+import domain.user.domain.User;
 import domain.category.domain.Category;
 import domain.notification.domain.NotificationSource;
 import jakarta.persistence.*;
