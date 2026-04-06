@@ -15,9 +15,9 @@ spring:
 
   jpa:
     database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
+      dialect: org.hibernate.dialect.MySQLDialect
     properties:
       hibernate:
         format_sql: true
@@ -27,7 +27,6 @@ spring:
     allow-bean-definition-overriding: true
 
   jackson:
-    property-naming-strategy: SNAKE_CASE
     serialization:
       fail-on-empty-beans: false
 
