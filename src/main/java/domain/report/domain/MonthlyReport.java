@@ -57,9 +57,9 @@ public class MonthlyReport {
         this.user = user;
         this.year = year;
         this.month = month;
-        this.totalIncome = totalIncome;
-        this.totalExpense = totalExpense;
-        this.prevMonthExpense = prevMonthExpense;
+        this.totalIncome = totalIncome != null ? totalIncome : 0L;
+        this.totalExpense = totalExpense != null ? totalExpense : 0L;
+        this.prevMonthExpense = prevMonthExpense != null ? prevMonthExpense : 0L;
         this.categoryBreakdown = categoryBreakdown;
     }
 
