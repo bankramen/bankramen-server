@@ -1,6 +1,6 @@
 package org.example.bankramenserver.domain.recurring.domain;
 
-import org.example.bankramenserver.domain.user.entity.User;
+import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.domain.category.domain.Category;
 import org.example.bankramenserver.domain.notification.domain.NotificationSource;
 import jakarta.persistence.*;
