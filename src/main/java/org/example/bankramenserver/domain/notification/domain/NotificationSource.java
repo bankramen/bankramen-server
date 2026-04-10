@@ -1,6 +1,6 @@
 package org.example.bankramenserver.domain.notification.domain;
 
-import org.example.bankramenserver.domain.user.domain.User;
+import org.example.bankramenserver.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

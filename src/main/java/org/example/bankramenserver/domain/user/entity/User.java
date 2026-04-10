@@ -1,4 +1,4 @@
-package org.example.bankramenserver.domain.user.domain;
+package org.example.bankramenserver.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
