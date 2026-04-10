@@ -35,6 +35,7 @@ jwt:
   header: ${HEADER}
   prefix: ${PREFIX}
   accessExp: ${ACCESS_EXP}
+  refreshExp: ${REFRESH_EXP}
 
 kakao:
   client-id: ${KAKAO_CLIENT_ID}

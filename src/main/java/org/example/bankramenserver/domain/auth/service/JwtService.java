@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import org.example.bankramenserver.domain.auth.exception.ExpiredTokenException;
 import org.example.bankramenserver.domain.auth.exception.InvalidTokenException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -18,24 +17,26 @@ import java.util.UUID;
 public class JwtService {
 
     private final SecretKey secretKey;
-    private final long expiration;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final long accessExp;
+    private final long refreshExp;
 
     public JwtService(
             @Value("${jwt.secretKey}") String secret,
-            @Value("${jwt.accessExp}") long expiration,
-            RedisTemplate<String, String> redisTemplate
+            @Value("${jwt.accessExp}") long accessExp,
+            @Value("${jwt.refreshExp}") long refreshExp
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        this.expiration = expiration;
-        this.redisTemplate = redisTemplate;
+        this.accessExp = accessExp;
+        this.refreshExp = refreshExp;
     }
 
     public String generateAccessToken(UUID userId) {
         return Jwts.builder()
                 .subject(userId.toString())
+                .claim("type", "access")
+                .id(UUID.randomUUID().toString()) // jti
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .expiration(new Date(System.currentTimeMillis() + accessExp))
                 .signWith(secretKey)
                 .compact();
     }
@@ -43,20 +44,42 @@ public class JwtService {
     public String generateRefreshToken(UUID userId) {
         return Jwts.builder()
                 .subject(userId.toString())
+                .claim("type", "refresh")
+                .id(UUID.randomUUID().toString()) // jti
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .expiration(new Date(System.currentTimeMillis() + refreshExp))
                 .signWith(secretKey)
                 .compact();
     }
 
-    public UUID validateToken(String token) {
+    public UUID validateAccessToken(String token) {
+        Claims claims = parse(token);
+
+        if (!"access".equals(claims.get("type"))) {
+            throw InvalidTokenException.EXCEPTION;
+        }
+
+        return UUID.fromString(claims.getSubject());
+    }
+
+    public UUID validateRefreshToken(String token) {
+        Claims claims = parse(token);
+
+        if (!"refresh".equals(claims.get("type"))) {
+            throw InvalidTokenException.EXCEPTION;
+        }
+
+        return UUID.fromString(claims.getSubject());
+    }
+
+    private Claims parse(String token) {
         try {
-            Claims claims = Jwts.parser()
+            return Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            return UUID.fromString(claims.getSubject());
+
         } catch (ExpiredJwtException e) {
             throw ExpiredTokenException.EXCEPTION;
         } catch (Exception e) {
