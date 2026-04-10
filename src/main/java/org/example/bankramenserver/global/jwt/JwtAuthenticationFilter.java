@@ -25,7 +25,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     private static final String[] PERMIT_URLS = {
-            "/auth/kakao/**"
+            "/auth/kakao/login",
+            "/auth/kakao/callback"
     };
 
     @Override
@@ -48,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw MissingTokenException.EXCEPTION;
         }
 
-        UUID userId = jwtService.validateToken(token);
+        UUID userId = jwtService.validateAccessToken(token);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(userId, null, List.of());
