@@ -42,3 +42,7 @@ kakao:
   redirect-uri: ${KAKAO_REDIRECT_URL}
   auth-url: ${KAKAO_AUTH_URL}
   api-url: ${KAKAO_API_URL}
+
+oauth:
+  state:
+    expiration: ${STATE_EXP}
