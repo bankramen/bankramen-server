@@ -38,7 +38,7 @@ jwt:
 
 kakao:
   client-id: ${KAKAO_CLIENT_ID}
-  client-secret: ${KAKAO_CLIENT_SECRIT}
+  client-secret: ${KAKAO_CLIENT_SECRET}
   redirect-uri: ${KAKAO_REDIRECT_URL}
   auth-url: ${KAKAO_AUTH_URL}
   api-url: ${KAKAO_API_URL}
