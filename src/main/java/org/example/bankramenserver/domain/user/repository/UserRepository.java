@@ -1,6 +1,6 @@
 package org.example.bankramenserver.domain.user.repository;
 
-import org.example.bankramenserver.domain.user.entity.User;
+import org.example.bankramenserver.domain.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
