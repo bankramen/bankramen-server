@@ -45,9 +45,9 @@ public class JwtService {
                     .getPayload();
             return UUID.fromString(claims.getSubject());
         } catch (ExpiredJwtException e) {
-            throw new ExpiredTokenException();
+            throw ExpiredTokenException.EXCEPTION;
         } catch (Exception e) {
-            throw new InvalidTokenException();
+            throw InvalidTokenException.EXCEPTION;
         }
     }
 }
