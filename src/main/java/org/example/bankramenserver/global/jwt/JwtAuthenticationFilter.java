@@ -5,9 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.bankramenserver.domain.auth.exception.MissingTokenException;
 import org.example.bankramenserver.domain.auth.service.JwtService;
-import org.example.bankramenserver.global.error.exception.ErrorCode;
-import org.example.bankramenserver.global.error.exception.GlobalException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -26,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     private static final String[] PERMIT_URLS = {
-            "/auth/kakao"
+            "/auth/kakao/**"
     };
 
     @Override
@@ -46,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         if (token == null) {
-            throw new GlobalException(ErrorCode.MISSING_TOKEN);
+            throw MissingTokenException.EXCEPTION;
         }
 
         UUID userId = jwtService.validateToken(token);
