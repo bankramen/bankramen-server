@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.example.bankramenserver.domain.auth.exception.ExpiredTokenException;
 import org.example.bankramenserver.domain.auth.exception.InvalidTokenException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -18,16 +19,28 @@ public class JwtService {
 
     private final SecretKey secretKey;
     private final long expiration;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public JwtService(
             @Value("${jwt.secretKey}") String secret,
-            @Value("${jwt.accessExp}") long expiration
+            @Value("${jwt.accessExp}") long expiration,
+            RedisTemplate<String, String> redisTemplate
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.expiration = expiration;
+        this.redisTemplate = redisTemplate;
     }
 
-    public String generateToken(UUID userId) {
+    public String generateAccessToken(UUID userId) {
+        return Jwts.builder()
+                .subject(userId.toString())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String generateRefreshToken(UUID userId) {
         return Jwts.builder()
                 .subject(userId.toString())
                 .issuedAt(new Date())
