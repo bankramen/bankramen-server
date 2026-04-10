@@ -3,7 +3,9 @@ package org.example.bankramenserver.domain.auth.service;
 import lombok.RequiredArgsConstructor;
 import org.example.bankramenserver.domain.auth.dto.KakaoTokenResponse;
 import org.example.bankramenserver.domain.auth.dto.KakaoUserResponse;
-import org.example.bankramenserver.domain.user.entity.User;
+import org.example.bankramenserver.domain.auth.exception.KaKaoTokenRequestFailedException;
+import org.example.bankramenserver.domain.auth.exception.KaKaoUserInfoRequestFailedException;
+import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.domain.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -63,7 +65,7 @@ public class KakaoOAuthService {
         );
 
         if (response == null) {
-            throw new RuntimeException("카카오 액세스 토큰을 가져올 수 없습니다.");
+            throw new KaKaoUserInfoRequestFailedException();
         }
         return response;
     }
@@ -82,7 +84,7 @@ public class KakaoOAuthService {
         ).getBody();
 
         if (response == null) {
-            throw new RuntimeException("카카오 사용자 정보를 가져올 수 없습니다.");
+            throw new KaKaoTokenRequestFailedException();
         }
         return response;
     }
