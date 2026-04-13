@@ -19,7 +19,7 @@ import java.util.UUID;
 @Table(name = "transactions",
         indexes = {
                 @Index(name = "idx_transaction_user_date", columnList = "user_id, transaction_date"),
-                @Index(name = "idx_transaction_user_category", columnList = "user_id, category_id")
+                @Index(name = "idx_transaction_user_category", columnList = "user_id, category")
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -39,8 +39,8 @@ public class Transaction {
     @JoinColumn(name = "notification_source_id")
     private NotificationSource notificationSource;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
     private Category category;
 
     @Enumerated(EnumType.STRING)
