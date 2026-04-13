@@ -1,9 +1,9 @@
 package org.example.bankramenserver.domain.report.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bankramenserver.domain.report.domain.repository.AmountSummaryRow;
 import org.example.bankramenserver.domain.report.domain.repository.MonthlyReportRepository;
 import org.example.bankramenserver.domain.report.presentation.dto.MonthlyAmountSummaryResponse;
-import org.example.bankramenserver.domain.transaction.domain.Transaction;
 import org.example.bankramenserver.domain.user.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,11 +26,26 @@ public class GetMonthlyAmountSummaryService {
 
         YearMonth currentMonth = YearMonth.of(year, month);
         YearMonth previousMonth = currentMonth.minusMonths(1);
+        AmountSummaryRow amountSummary = monthlyReportRepository.findAmountSummary(
+                userId,
+                currentMonth.atDay(1),
+                currentMonth.atEndOfMonth(),
+                previousMonth.atDay(1),
+                previousMonth.atEndOfMonth()
+        );
 
         return MonthlyAmountSummaryResponse.of(
                 currentMonth,
-                getAmountComparison(userId, Transaction.TransactionType.EXPENSE, currentMonth, previousMonth),
-                getAmountComparison(userId, Transaction.TransactionType.INCOME, currentMonth, previousMonth)
+                getAmountComparison(
+                        amountSummary.currentExpense(),
+                        amountSummary.previousExpense(),
+                        amountSummary.previousExpenseCount()
+                ),
+                getAmountComparison(
+                        amountSummary.currentIncome(),
+                        amountSummary.previousIncome(),
+                        amountSummary.previousIncomeCount()
+                )
         );
     }
 
@@ -41,42 +56,27 @@ public class GetMonthlyAmountSummaryService {
     }
 
     private MonthlyAmountSummaryResponse.AmountComparison getAmountComparison(
-            UUID userId,
-            Transaction.TransactionType transactionType,
-            YearMonth currentMonth,
-            YearMonth previousMonth
+            Long currentAmount,
+            Long previousAmount,
+            Long previousCount
     ) {
-        long currentAmount = monthlyReportRepository.sumAmountByUserAndTypeAndPeriod(
-                userId,
-                transactionType,
-                currentMonth.atDay(1),
-                currentMonth.atEndOfMonth()
-        );
-
-        boolean hasPreviousMonthData = monthlyReportRepository.existsAmountByUserAndTypeAndPeriod(
-                userId,
-                transactionType,
-                previousMonth.atDay(1),
-                previousMonth.atEndOfMonth()
-        );
+        long current = getAmount(currentAmount);
+        long previous = getAmount(previousAmount);
+        boolean hasPreviousMonthData = previousCount != null && previousCount > 0L;
 
         if (!hasPreviousMonthData) {
-            return MonthlyAmountSummaryResponse.AmountComparison.withoutPreviousMonth(currentAmount);
+            return MonthlyAmountSummaryResponse.AmountComparison.withoutPreviousMonth(current);
         }
 
-        long previousAmount = monthlyReportRepository.sumAmountByUserAndTypeAndPeriod(
-                userId,
-                transactionType,
-                previousMonth.atDay(1),
-                previousMonth.atEndOfMonth()
-        );
-        long differenceAmount = currentAmount - previousAmount;
-
         return MonthlyAmountSummaryResponse.AmountComparison.of(
-                currentAmount,
-                previousAmount,
-                calculateRate(differenceAmount, previousAmount)
+                current,
+                previous,
+                calculateRate(current - previous, previous)
         );
+    }
+
+    private long getAmount(Long amount) {
+        return amount == null ? 0L : amount;
     }
 
     private BigDecimal calculateRate(long differenceAmount, long previousAmount) {

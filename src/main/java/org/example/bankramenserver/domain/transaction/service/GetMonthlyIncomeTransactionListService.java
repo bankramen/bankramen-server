@@ -26,7 +26,7 @@ public class GetMonthlyIncomeTransactionListService {
 
         YearMonth yearMonth = YearMonth.of(year, month);
         List<TransactionHistoryResponse> incomes = transactionRepository
-                .findAllByUserIdAndTypeAndTransactionDateBetweenOrderByTransactionDateDescCreatedAtDesc(
+                .findTransactionHistories(
                         userId,
                         Transaction.TransactionType.INCOME,
                         yearMonth.atDay(1),

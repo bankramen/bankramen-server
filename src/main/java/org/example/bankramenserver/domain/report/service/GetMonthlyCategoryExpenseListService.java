@@ -1,7 +1,6 @@
 package org.example.bankramenserver.domain.report.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.bankramenserver.domain.category.domain.Category;
 import org.example.bankramenserver.domain.report.domain.repository.CategoryExpenseRow;
 import org.example.bankramenserver.domain.report.domain.repository.MonthlyReportRepository;
 import org.example.bankramenserver.domain.report.presentation.dto.MonthlyCategoryExpenseListResponse;
@@ -13,10 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,24 +27,20 @@ public class GetMonthlyCategoryExpenseListService {
 
         YearMonth currentMonth = YearMonth.of(year, month);
         YearMonth previousMonth = currentMonth.minusMonths(1);
-        long totalExpense = monthlyReportRepository.sumExpenseByUserAndPeriod(
+        List<CategoryExpenseRow> rows = monthlyReportRepository.findCategoryExpenseComparisons(
                 userId,
                 currentMonth.atDay(1),
-                currentMonth.atEndOfMonth()
+                currentMonth.atEndOfMonth(),
+                previousMonth.atDay(1),
+                previousMonth.atEndOfMonth()
         );
-        Map<Category, CategoryExpenseRow> previousRows = monthlyReportRepository.findCategoryExpenses(
-                        userId,
-                        previousMonth.atDay(1),
-                        previousMonth.atEndOfMonth()
-                )
-                .stream()
-                .collect(Collectors.toMap(CategoryExpenseRow::getCategory, Function.identity(), (left, right) -> left));
+        long totalExpense = rows.stream()
+                .mapToLong(row -> getAmount(row.currentExpense()))
+                .sum();
 
-        List<MonthlyCategoryExpenseListResponse.CategoryExpense> categories =
-                monthlyReportRepository.findCategoryExpenses(userId, currentMonth.atDay(1), currentMonth.atEndOfMonth())
-                        .stream()
-                        .map(row -> toCategoryExpense(row, previousRows.get(row.getCategory()), totalExpense))
-                        .toList();
+        List<MonthlyCategoryExpenseListResponse.CategoryExpense> categories = rows.stream()
+                .map(row -> toCategoryExpense(row, totalExpense))
+                .toList();
 
         return MonthlyCategoryExpenseListResponse.of(
                 currentMonth,
@@ -65,19 +57,22 @@ public class GetMonthlyCategoryExpenseListService {
 
     private MonthlyCategoryExpenseListResponse.CategoryExpense toCategoryExpense(
             CategoryExpenseRow row,
-            CategoryExpenseRow previousRow,
             long totalExpense
     ) {
-        long expenseAmount = row.getTotalExpense() == null ? 0L : row.getTotalExpense();
-        long previousExpenseAmount = previousRow == null || previousRow.getTotalExpense() == null ? 0L : previousRow.getTotalExpense();
+        long expenseAmount = getAmount(row.currentExpense());
+        long previousExpenseAmount = getAmount(row.previousExpense());
 
         return MonthlyCategoryExpenseListResponse.CategoryExpense.of(
-                row.getCategory(),
-                row.getCategory().getDisplayName(),
+                row.category(),
+                row.category().getDisplayName(),
                 expenseAmount,
                 calculateRatio(expenseAmount, totalExpense),
                 expenseAmount > previousExpenseAmount
         );
+    }
+
+    private long getAmount(Long amount) {
+        return amount == null ? 0L : amount;
     }
 
     private BigDecimal calculateRatio(long amount, long totalExpense) {

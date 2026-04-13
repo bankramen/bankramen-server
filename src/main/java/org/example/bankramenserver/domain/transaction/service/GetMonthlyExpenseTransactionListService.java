@@ -26,7 +26,7 @@ public class GetMonthlyExpenseTransactionListService {
 
         YearMonth yearMonth = YearMonth.of(year, month);
         List<TransactionHistoryResponse> expenses = transactionRepository
-                .findAllByUserIdAndTypeAndTransactionDateBetweenOrderByTransactionDateDescCreatedAtDesc(
+                .findTransactionHistories(
                         userId,
                         Transaction.TransactionType.EXPENSE,
                         yearMonth.atDay(1),

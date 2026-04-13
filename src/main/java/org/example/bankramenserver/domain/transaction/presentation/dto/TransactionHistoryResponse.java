@@ -2,7 +2,7 @@ package org.example.bankramenserver.domain.transaction.presentation.dto;
 
 import lombok.Builder;
 import org.example.bankramenserver.domain.category.domain.Category;
-import org.example.bankramenserver.domain.transaction.domain.Transaction;
+import org.example.bankramenserver.domain.transaction.domain.repository.TransactionHistoryRow;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,24 +17,24 @@ public record TransactionHistoryResponse(
         String categoryName
 ) {
 
-    public static TransactionHistoryResponse from(Transaction transaction) {
-        Category category = transaction.getCategory();
+    public static TransactionHistoryResponse from(TransactionHistoryRow transactionHistoryRow) {
+        Category category = transactionHistoryRow.category();
 
         return TransactionHistoryResponse.builder()
-                .title(transaction.getDescription())
-                .transactionDate(transaction.getTransactionDate())
-                .transactionTime(resolveTransactionTime(transaction))
-                .amount(transaction.getAmount())
+                .title(transactionHistoryRow.title())
+                .transactionDate(transactionHistoryRow.transactionDate())
+                .transactionTime(resolveTransactionTime(transactionHistoryRow))
+                .amount(transactionHistoryRow.amount() == null ? 0L : transactionHistoryRow.amount())
                 .category(category)
                 .categoryName(category.getDisplayName())
                 .build();
     }
 
-    private static LocalTime resolveTransactionTime(Transaction transaction) {
-        if (transaction.getCreatedAt() == null) {
+    private static LocalTime resolveTransactionTime(TransactionHistoryRow transactionHistoryRow) {
+        if (transactionHistoryRow.createdAt() == null) {
             return null;
         }
 
-        return transaction.getCreatedAt().toLocalTime();
+        return transactionHistoryRow.createdAt().toLocalTime();
     }
 }
