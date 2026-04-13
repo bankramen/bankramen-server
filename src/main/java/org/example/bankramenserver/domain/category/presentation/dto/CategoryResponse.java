@@ -2,12 +2,12 @@ package org.example.bankramenserver.domain.category.presentation.dto;
 
 import org.example.bankramenserver.domain.category.domain.Category;
 
-public record DefaultCategoryResponse(
+public record CategoryResponse(
         String code,
         String displayName
 ) {
-    public static DefaultCategoryResponse from(Category category) {
-        return new DefaultCategoryResponse(
+    public static CategoryResponse from(Category category) {
+        return new CategoryResponse(
                 category.name(),
                 category.getDisplayName()
         );
