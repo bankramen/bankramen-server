@@ -131,13 +131,19 @@ public class KakaoOAuthService {
     }
 
     public String reissue(String refreshToken) {
-        String userId = redisTemplate.opsForValue()
+        UUID userIdFromToken = jwtService.validateRefreshToken(refreshToken);
+
+        String storedUserId = redisTemplate.opsForValue()
                 .get("refresh:" + refreshToken);
 
-        if (userId == null) {
+        if (storedUserId == null) {
             throw InvalidTokenException.EXCEPTION;
         }
 
-        return jwtService.generateAccessToken(UUID.fromString(userId));
+        if (!userIdFromToken.toString().equals(storedUserId)) {
+            throw InvalidTokenException.EXCEPTION;
+        }
+
+        return jwtService.generateAccessToken(userIdFromToken);
     }
 }
