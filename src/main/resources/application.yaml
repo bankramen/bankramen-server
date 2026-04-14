@@ -35,3 +35,16 @@ jwt:
   header: ${HEADER}
   prefix: ${PREFIX}
   accessExp: ${ACCESS_EXP}
+  refreshExp: ${REFRESH_EXP}
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  client-secret: ${KAKAO_CLIENT_SECRET}
+  redirect-uri: ${KAKAO_REDIRECT_URL}
+  auth-url: ${KAKAO_AUTH_URL}
+  api-url: ${KAKAO_API_URL}
+
+oauth:
+  state:
+    expiration: ${STATE_EXP}
+    prefix: ${STATE_PREFIX}
