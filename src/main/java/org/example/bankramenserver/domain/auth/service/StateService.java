@@ -18,7 +18,7 @@ public class StateService {
     private long stateExpiration;
 
     @Value("${oauth.state.prefix}")
-    private static String PREFIX;
+    private String PREFIX;
 
     public String generateState() {
         String state = UUID.randomUUID().toString();
