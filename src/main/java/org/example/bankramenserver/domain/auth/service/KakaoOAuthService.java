@@ -9,6 +9,7 @@ import org.example.bankramenserver.domain.auth.exception.KaKaoUserInfoRequestFai
 import org.example.bankramenserver.domain.auth.exception.InvalidTokenException;
 import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.domain.user.service.UserService;
+import org.example.bankramenserver.global.jwt.JwtProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
@@ -45,6 +46,7 @@ public class KakaoOAuthService {
     private final RedisTemplate<String, String> redisTemplate;
     private final UserService userService;
     private final JwtService jwtService;
+    private final JwtProperties jwtProperties;
 
     public Map<String, String> kakaoLogin(String code) {
         KakaoTokenResponse token = getAccessToken(code);
@@ -55,8 +57,15 @@ public class KakaoOAuthService {
         String accessToken = jwtService.generateAccessToken(user.getId());
         String refreshToken = jwtService.generateRefreshToken(user.getId());
 
+        long refreshExp = jwtProperties.getRefreshExp();
+
         redisTemplate.opsForValue()
-                .set("refresh:" + refreshToken, user.getId().toString(), 7, TimeUnit.DAYS);
+                .set(
+                        "refresh:" + refreshToken,
+                        user.getId().toString(),
+                        refreshExp,
+                        TimeUnit.SECONDS
+                );
 
         return Map.of(
                 "accessToken", accessToken,
