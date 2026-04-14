@@ -28,9 +28,10 @@ public class StateService {
     }
 
     public boolean validateState(String state) {
-        String saved = redisTemplate.opsForValue().get(PREFIX + state);
-        if (saved == null) return false;
-        redisTemplate.delete(PREFIX + state);
-        return true;
+        String key = PREFIX + state;
+
+        String saved = redisTemplate.opsForValue().getAndDelete(key);
+
+        return saved != null;
     }
 }
