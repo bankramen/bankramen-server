@@ -47,3 +47,4 @@ kakao:
 oauth:
   state:
     expiration: ${STATE_EXP}
+    prefix: ${STATE_PREFIX}

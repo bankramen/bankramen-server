@@ -13,15 +13,17 @@ import java.util.concurrent.TimeUnit;
 public class StateService {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String PREFIX = "oauth_state:";
 
     @Value("${oauth.state.expiration}")
-    private long expiration;
+    private long stateExpiration;
+
+    @Value("${oauth.state.prefix}")
+    private static String PREFIX;
 
     public String generateState() {
         String state = UUID.randomUUID().toString();
         redisTemplate.opsForValue()
-                .set(PREFIX + state, state, expiration, TimeUnit.SECONDS);
+                .set(PREFIX + state, state, stateExpiration, TimeUnit.SECONDS);
         return state;
     }
 
