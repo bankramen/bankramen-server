@@ -22,10 +22,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew clean build -x test
-
-      - name: List build output
-        run: ls -al build/libs
+        run: ./gradlew clean bootJar -x test
 
       - name: Copy JAR to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -33,9 +30,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
-          source: "build/libs/*.jar"
+          source: "build/libs/*SNAPSHOT.jar"
           target: "/home/ubuntu/app/"
-          strip_components: 2
+          strip_components: 0
 
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
