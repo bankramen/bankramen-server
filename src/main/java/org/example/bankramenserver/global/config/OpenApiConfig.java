@@ -1,0 +1,22 @@
+package org.example.bankramenserver.global.config;
+
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@OpenAPIDefinition(
+        info = @Info(
+                title = "Bankramen API",
+                version = "v1",
+                description = "Bankramen 서버 API 명세입니다."
+        ),
+        tags = {
+                @Tag(name = "Category", description = "기본 제공 카테고리 조회 API"),
+                @Tag(name = "Monthly Report", description = "월별 리포트 조회 API"),
+                @Tag(name = "Transaction", description = "월별 수입/지출 거래 내역 조회 API")
+        }
+)
+public class OpenApiConfig {
+}
