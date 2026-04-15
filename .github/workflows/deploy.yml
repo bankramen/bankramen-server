@@ -34,7 +34,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           source: "build/libs/*.jar"
-          target: "/home/ubuntu/app/app.jar"
+          target: "/home/ubuntu/app/"
           strip_components: 2
 
       - name: Deploy on EC2
