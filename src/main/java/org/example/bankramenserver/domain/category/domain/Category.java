@@ -1,10 +1,12 @@
 package org.example.bankramenserver.domain.category.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
+@Schema(description = "거래 카테고리 코드")
 public enum Category {
 
     /** 식사, 배달, 외식 등 식비 지출 카테고리 */
