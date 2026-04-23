@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,8 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class TransactionControllerTest {
-
-    private static final UUID USER_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
 
     @Mock
     private GetMonthlyIncomeTransactionListService getMonthlyIncomeTransactionListService;
@@ -62,9 +59,9 @@ class TransactionControllerTest {
                 ))
         );
 
-        when(getMonthlyIncomeTransactionListService.execute(USER_ID, 2026, 8)).thenReturn(response);
+        when(getMonthlyIncomeTransactionListService.execute(2026, 8)).thenReturn(response);
 
-        mockMvc.perform(get("/transactions/incomes/{userId}", USER_ID)
+        mockMvc.perform(get("/transactions/incomes")
                         .param("year", "2026")
                         .param("month", "8"))
                 .andExpect(status().isOk())
@@ -76,7 +73,7 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$.incomes[0].category").value("SALARY"))
                 .andExpect(jsonPath("$.incomes[0].categoryName").value("급여"));
 
-        verify(getMonthlyIncomeTransactionListService).execute(USER_ID, 2026, 8);
+        verify(getMonthlyIncomeTransactionListService).execute(2026, 8);
     }
 
     @Test
@@ -93,9 +90,9 @@ class TransactionControllerTest {
                 ))
         );
 
-        when(getMonthlyExpenseTransactionListService.execute(USER_ID, 2026, 8)).thenReturn(response);
+        when(getMonthlyExpenseTransactionListService.execute(2026, 8)).thenReturn(response);
 
-        mockMvc.perform(get("/transactions/expenses/{userId}", USER_ID)
+        mockMvc.perform(get("/transactions/expenses")
                         .param("year", "2026")
                         .param("month", "8"))
                 .andExpect(status().isOk())
@@ -107,6 +104,6 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$.expenses[0].category").value("FOOD"))
                 .andExpect(jsonPath("$.expenses[0].categoryName").value("식비"));
 
-        verify(getMonthlyExpenseTransactionListService).execute(USER_ID, 2026, 8);
+        verify(getMonthlyExpenseTransactionListService).execute(2026, 8);
     }
 }

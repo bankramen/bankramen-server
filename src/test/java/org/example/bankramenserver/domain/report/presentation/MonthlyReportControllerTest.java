@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,8 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class MonthlyReportControllerTest {
-
-    private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
     @Mock
     private GetMonthlyAmountSummaryService getMonthlyAmountSummaryService;
@@ -54,9 +51,9 @@ class MonthlyReportControllerTest {
                 MonthlyAmountSummaryResponse.AmountComparison.of(3500000L, 3000000L, BigDecimal.valueOf(16.7))
         );
 
-        when(getMonthlyAmountSummaryService.execute(USER_ID, 2026, 8)).thenReturn(response);
+        when(getMonthlyAmountSummaryService.execute(2026, 8)).thenReturn(response);
 
-        mockMvc.perform(get("/reports/monthly/summary/{userId}", USER_ID)
+        mockMvc.perform(get("/reports/monthly/summary")
                         .param("year", "2026")
                         .param("month", "8"))
                 .andExpect(status().isOk())
@@ -70,7 +67,7 @@ class MonthlyReportControllerTest {
                 .andExpect(jsonPath("$.income.hasPreviousMonthData").value(true))
                 .andExpect(jsonPath("$.income.differenceRate").value(16.7));
 
-        verify(getMonthlyAmountSummaryService).execute(USER_ID, 2026, 8);
+        verify(getMonthlyAmountSummaryService).execute(2026, 8);
     }
 
     @Test
@@ -96,9 +93,9 @@ class MonthlyReportControllerTest {
                 )
         );
 
-        when(getMonthlyCategoryExpenseListService.execute(USER_ID, 2026, 8)).thenReturn(response);
+        when(getMonthlyCategoryExpenseListService.execute(2026, 8)).thenReturn(response);
 
-        mockMvc.perform(get("/reports/monthly/categories/{userId}", USER_ID)
+        mockMvc.perform(get("/reports/monthly/categories")
                         .param("year", "2026")
                         .param("month", "8"))
                 .andExpect(status().isOk())
@@ -112,6 +109,6 @@ class MonthlyReportControllerTest {
                 .andExpect(jsonPath("$.categories[1].category").value("TRANSPORT_CAR"))
                 .andExpect(jsonPath("$.categories[1].spentMoreThanPreviousMonth").value(false));
 
-        verify(getMonthlyCategoryExpenseListService).execute(USER_ID, 2026, 8);
+        verify(getMonthlyCategoryExpenseListService).execute(2026, 8);
     }
 }

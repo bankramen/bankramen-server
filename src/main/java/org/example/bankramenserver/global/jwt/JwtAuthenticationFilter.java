@@ -26,7 +26,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String[] PERMIT_URLS = {
             "/auth/kakao/login",
-            "/auth/kakao/callback"
+            "/auth/kakao/callback",
+            "/swagger-ui",
+            "/swagger-ui.html",
+            "/v3/api-docs"
     };
 
     @Override
