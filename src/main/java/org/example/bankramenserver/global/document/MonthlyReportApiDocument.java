@@ -32,7 +32,8 @@ public interface MonthlyReportApiDocument {
                             schema = @Schema(implementation = MonthlyAmountSummaryResponse.class)
                     )
             ),
-            @ApiResponse(responseCode = "400", description = "요청 파라미터 검증 실패", content = @Content)
+            @ApiResponse(responseCode = "400", description = "요청 파라미터 검증 실패", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content)
     })
     MonthlyAmountSummaryResponse getMonthlyAmountSummary(
             @Parameter(description = "조회 연도", required = true, example = "2026")
@@ -56,7 +57,8 @@ public interface MonthlyReportApiDocument {
                             schema = @Schema(implementation = MonthlyCategoryExpenseListResponse.class)
                     )
             ),
-            @ApiResponse(responseCode = "400", description = "요청 파라미터 검증 실패", content = @Content)
+            @ApiResponse(responseCode = "400", description = "요청 파라미터 검증 실패", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content)
     })
     MonthlyCategoryExpenseListResponse getMonthlyCategoryExpenses(
             @Parameter(description = "조회 연도", required = true, example = "2026")
