@@ -7,12 +7,9 @@ import org.example.bankramenserver.domain.report.service.GetMonthlyAmountSummary
 import org.example.bankramenserver.domain.report.service.GetMonthlyCategoryExpenseListService;
 import org.example.bankramenserver.global.document.MonthlyReportApiDocument;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,22 +20,20 @@ public class MonthlyReportController implements MonthlyReportApiDocument {
     private final GetMonthlyCategoryExpenseListService getMonthlyCategoryExpenseListService;
 
     @Override
-    @GetMapping("/summary/{userId}")
+    @GetMapping("/summary")
     public MonthlyAmountSummaryResponse getMonthlyAmountSummary(
-            @PathVariable UUID userId,
             @RequestParam int year,
             @RequestParam int month
     ) {
-        return getMonthlyAmountSummaryService.execute(userId, year, month);
+        return getMonthlyAmountSummaryService.execute(year, month);
     }
 
     @Override
-    @GetMapping("/categories/{userId}")
+    @GetMapping("/categories")
     public MonthlyCategoryExpenseListResponse getMonthlyCategoryExpenses(
-            @PathVariable UUID userId,
             @RequestParam int year,
             @RequestParam int month
     ) {
-        return getMonthlyCategoryExpenseListService.execute(userId, year, month);
+        return getMonthlyCategoryExpenseListService.execute(year, month);
     }
 }

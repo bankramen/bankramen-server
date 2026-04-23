@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.bankramenserver.domain.report.domain.repository.AmountSummaryRow;
 import org.example.bankramenserver.domain.report.domain.repository.MonthlyReportRepository;
 import org.example.bankramenserver.domain.report.presentation.dto.MonthlyAmountSummaryResponse;
-import org.example.bankramenserver.domain.user.domain.repository.UserRepository;
+import org.example.bankramenserver.domain.user.facade.UserFacade;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,17 +17,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GetMonthlyAmountSummaryService {
 
-    private final UserRepository userRepository;
+    private final UserFacade userFacade;
     private final MonthlyReportRepository monthlyReportRepository;
 
     @Transactional(readOnly = true)
-    public MonthlyAmountSummaryResponse execute(UUID userId, int year, int month) {
-        validateUserExists(userId);
+    public MonthlyAmountSummaryResponse execute(int year, int month) {
+        UUID currentUserId = userFacade.getCurrentUser().getId();
 
         YearMonth currentMonth = YearMonth.of(year, month);
         YearMonth previousMonth = currentMonth.minusMonths(1);
+
         AmountSummaryRow amountSummary = monthlyReportRepository.findAmountSummary(
-                userId,
+                currentUserId,
                 currentMonth.atDay(1),
                 currentMonth.atEndOfMonth(),
                 previousMonth.atDay(1),
@@ -47,12 +48,6 @@ public class GetMonthlyAmountSummaryService {
                         amountSummary.previousIncomeCount()
                 )
         );
-    }
-
-    private void validateUserExists(UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("사용자를 찾을 수 없습니다. userId=" + userId);
-        }
     }
 
     private MonthlyAmountSummaryResponse.AmountComparison getAmountComparison(
