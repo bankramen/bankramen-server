@@ -1,28 +1,29 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a Gradle-based Spring Boot backend. Put application code under `src/main/java/org/example`, grouped by feature (`auth`, `user`, `common`, etc.) rather than by framework alone. Keep runtime configuration in `src/main/resources/application.yaml`. Place tests in `src/test/java/org/example` with the same package structure as production code.
-
-Current dependencies indicate a MySQL + JPA + Redis + Spring Security/JWT stack, so keep persistence, cache, and security concerns separated into focused packages.
+This is a Gradle-based Spring Boot 3 backend. Application code lives under `src/main/java/org/example/bankramenserver` and is grouped by domain feature such as `auth`, `user`, `category`, `report`, and `transaction`. Follow the layered package style already in use: `domain`, `presentation`, `presentation/dto`, `service`, `facade`, and `domain/repository` where persistence is needed. Keep shared infrastructure in `global`, including `config`, `error`, `jwt`, and Swagger document interfaces in `global/document`. Tests belong under `src/test/java/org/example/bankramenserver`.
 
 ## Build, Test, and Development Commands
-Use the Gradle wrapper through Bash because `gradlew` is not executable in the current repo state.
+Use the Gradle wrapper through Bash.
 
-- `bash ./gradlew test` — run the JUnit 5 and Spring test suite.
+- `bash ./gradlew test` — run the JUnit 5 test suite.
 - `bash ./gradlew build` — compile, test, and package the app.
 - `bash ./gradlew bootRun` — start the service locally.
 - `bash ./gradlew clean` — remove Gradle build outputs.
 
-The build requires **JDK 26** (`build.gradle` toolchain setting). Export the environment variables referenced in `application.yaml` before running locally, such as `MYSQL_URL`, `REDIS_HOST`, and `JWT_SECRET`.
+The project uses Java toolchain **17**. Export values required by `application.yaml`, such as MySQL, Redis, and JWT settings, before local runtime testing.
 
 ## Coding Style & Naming Conventions
-Use 4-space indentation and keep files formatted consistently with standard Java/Spring conventions. Use lowercase package names, `PascalCase` for classes, `camelCase` for methods/fields, and `UPPER_SNAKE_CASE` for constants. Prefer constructor injection for Spring beans and keep controllers thin; business logic should live in services.
+Use standard Java/Spring conventions with 4-space indentation. Class names use `PascalCase`; methods and fields use `camelCase`; constants use `UPPER_SNAKE_CASE`. Prefer constructor injection with Lombok `@RequiredArgsConstructor`. Keep controllers thin and delegate business logic to services. Use record DTOs for immutable request/response shapes and builders when construction readability improves.
+
+## API, Security & Error Handling
+Protected APIs should identify the current user from the JWT security context through `UserFacade`; do not accept `userId` path parameters for user-owned report or transaction data. Keep auth rules explicit in `SecurityConfig`. Define Swagger/OpenAPI annotations in `global/document` interfaces and have controllers implement them. Use `GlobalException` plus `ErrorCode`; avoid hard-coded `IllegalArgumentException` for domain/API failures.
+
+## Persistence & Querying
+Use Spring Data JPA repositories and Querydsl custom repositories for complex reads. Name custom contracts like `TransactionRepositoryCustom` and implement with `TransactionRepositoryImpl`. Keep query projection records close to the repository package.
 
 ## Testing Guidelines
-Use `spring-boot-starter-test` and `spring-security-test`. Name tests `*Test` and mirror the production package structure. Add focused unit tests for services/utilities and use slice or integration tests only when framework wiring matters. No coverage gate is configured yet, but new behavior should ship with regression tests.
+Use `spring-boot-starter-test`, Mockito, and `MockMvcBuilders.standaloneSetup()` for focused controller tests. Name test classes `*Test`. Verify response JSON contracts, status codes, and service invocation parameters. Add integration tests only when framework wiring or persistence must be proven.
 
 ## Commit & Pull Request Guidelines
-Recent history follows a short conventional style such as `chore(#1): remove unused entity` and `init(#1): setting`. Keep that `type(#issue): summary` pattern, and include rationale plus verification details in the PR description. For API or security changes, add sample requests/responses, changed environment variables, and linked issue numbers.
-
-## Security & Configuration Tips
-Never hardcode secrets. Keep all database, Redis, and JWT values in environment variables. If you change auth, persistence, or cache settings, document the required config changes in the PR.
+Follow the existing `type(#issue): summary` commit style, e.g. `feat(#9): 리포트 거래 API 인증 명시`. Keep commits focused and include rationale plus verification details in PRs. For API or security changes, document changed endpoints, auth requirements, example requests/responses, and required environment variables.

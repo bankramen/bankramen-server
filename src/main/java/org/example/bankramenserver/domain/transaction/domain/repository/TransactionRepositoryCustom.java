@@ -14,4 +14,9 @@ public interface TransactionRepositoryCustom {
             LocalDate startDate,
             LocalDate endDate
     );
+
+    List<TransactionHistoryRow> findRecentTransactionHistories(
+            UUID userId,
+            int limit
+    );
 }

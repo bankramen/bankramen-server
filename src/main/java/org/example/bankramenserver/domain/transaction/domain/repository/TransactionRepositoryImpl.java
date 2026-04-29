@@ -29,10 +29,12 @@ public class TransactionRepositoryImpl implements TransactionRepositoryCustom {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         TransactionHistoryRow.class,
+                        transaction.id,
                         transaction.description,
                         transaction.transactionDate,
                         transaction.createdAt,
                         transaction.amount,
+                        transaction.type,
                         transaction.category
                 ))
                 .from(transaction)
@@ -46,6 +48,33 @@ public class TransactionRepositoryImpl implements TransactionRepositoryCustom {
                         transaction.createdAt.desc(),
                         transaction.id.desc()
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<TransactionHistoryRow> findRecentTransactionHistories(
+            UUID userId,
+            int limit
+    ) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        TransactionHistoryRow.class,
+                        transaction.id,
+                        transaction.description,
+                        transaction.transactionDate,
+                        transaction.createdAt,
+                        transaction.amount,
+                        transaction.type,
+                        transaction.category
+                ))
+                .from(transaction)
+                .where(transaction.user.id.eq(userId))
+                .orderBy(
+                        transaction.transactionDate.desc(),
+                        transaction.createdAt.desc(),
+                        transaction.id.desc()
+                )
+                .limit(limit)
                 .fetch();
     }
 }
