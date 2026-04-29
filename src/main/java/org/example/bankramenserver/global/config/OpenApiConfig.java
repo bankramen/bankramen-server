@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
         tags = {
                 @Tag(name = "Category", description = "기본 제공 카테고리 조회 API"),
                 @Tag(name = "Monthly Report", description = "월별 리포트 조회 API"),
-                @Tag(name = "Transaction", description = "월별 수입/지출 거래 내역 조회 API")
+                @Tag(name = "Transaction", description = "거래 내역 조회 및 관리 API")
         }
 )
 @SecurityScheme(
