@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.bankramenserver.global.common.BaseEntity;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -18,14 +20,15 @@ public class DeviceToken extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long memberId;
+    @Column(nullable = false, columnDefinition = "BINARY(16)")
+    @JdbcTypeCode(SqlTypes.BINARY)
+    private UUID memberId;
 
     @Column(nullable = false, unique = true)
     private String token;
 
     @Builder
-    public DeviceToken(Long memberId, String token) {
+    public DeviceToken(UUID memberId, String token) { // Changed parameter type to UUID
         this.memberId = memberId;
         this.token = token;
     }
