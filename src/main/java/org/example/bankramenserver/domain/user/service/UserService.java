@@ -3,7 +3,7 @@ package org.example.bankramenserver.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.example.bankramenserver.domain.auth.dto.KakaoUserResponse;
 import org.example.bankramenserver.domain.user.exception.UserInfoNotFound;
-import org.example.bankramenserver.domain.user.repository.UserRepository;
+import org.example.bankramenserver.domain.user.domain.repository.UserRepository;
 import org.example.bankramenserver.domain.user.domain.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
