@@ -30,6 +30,14 @@ spring:
     serialization:
       fail-on-empty-beans: false
 
+  cloud:
+    openfeign:
+      client:
+        config:
+          geminiClient:
+            connectTimeout: 1000
+            readTimeout: 2000
+
 jwt:
   secretKey: ${JWT_SECRET}
   header: ${HEADER}
@@ -48,3 +56,8 @@ oauth:
   state:
     expiration: ${STATE_EXP}
     prefix: ${STATE_PREFIX}
+
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  model: ${GEMINI_MODEL}
+  base-url: ${GEMINI_BASE_URL}
