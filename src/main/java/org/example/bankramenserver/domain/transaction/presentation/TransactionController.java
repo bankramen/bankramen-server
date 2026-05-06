@@ -1,12 +1,14 @@
 package org.example.bankramenserver.domain.transaction.presentation;
 
 import lombok.RequiredArgsConstructor;
+import org.example.bankramenserver.domain.transaction.presentation.dto.CreatePaymentNotificationTransactionRequest;
 import org.example.bankramenserver.domain.transaction.presentation.dto.CreateTransactionRequest;
 import org.example.bankramenserver.domain.transaction.presentation.dto.MonthlyExpenseTransactionListResponse;
 import org.example.bankramenserver.domain.transaction.presentation.dto.MonthlyIncomeTransactionListResponse;
 import org.example.bankramenserver.domain.transaction.presentation.dto.RecentTransactionListResponse;
 import org.example.bankramenserver.domain.transaction.presentation.dto.TransactionHistoryResponse;
 import org.example.bankramenserver.domain.transaction.presentation.dto.UpdateTransactionCategoryRequest;
+import org.example.bankramenserver.domain.transaction.service.CreatePaymentNotificationTransactionService;
 import org.example.bankramenserver.domain.transaction.service.CreateTransactionService;
 import org.example.bankramenserver.domain.transaction.service.DeleteTransactionService;
 import org.example.bankramenserver.domain.transaction.service.GetRecentTransactionListService;
@@ -37,6 +39,7 @@ public class TransactionController implements TransactionApiDocument {
     private final GetMonthlyExpenseTransactionListService getMonthlyExpenseTransactionListService;
     private final GetRecentTransactionListService getRecentTransactionListService;
     private final CreateTransactionService createTransactionService;
+    private final CreatePaymentNotificationTransactionService createPaymentNotificationTransactionService;
     private final DeleteTransactionService deleteTransactionService;
     private final UpdateTransactionCategoryService updateTransactionCategoryService;
 
@@ -51,6 +54,13 @@ public class TransactionController implements TransactionApiDocument {
     @ResponseStatus(HttpStatus.CREATED)
     public void createTransaction(@RequestBody CreateTransactionRequest request) {
         createTransactionService.execute(request);
+    }
+
+    @Override
+    @PostMapping("/payment-notifications")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createPaymentNotificationTransaction(@RequestBody CreatePaymentNotificationTransactionRequest request) {
+        createPaymentNotificationTransactionService.execute(request);
     }
 
     @Override

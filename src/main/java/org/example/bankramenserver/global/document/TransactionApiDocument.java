@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.example.bankramenserver.domain.transaction.presentation.dto.CreatePaymentNotificationTransactionRequest;
 import org.example.bankramenserver.domain.transaction.presentation.dto.CreateTransactionRequest;
 import org.example.bankramenserver.domain.transaction.presentation.dto.MonthlyExpenseTransactionListResponse;
 import org.example.bankramenserver.domain.transaction.presentation.dto.MonthlyIncomeTransactionListResponse;
@@ -67,6 +68,27 @@ public interface TransactionApiDocument {
             )
             @Valid
             CreateTransactionRequest request
+    );
+
+    @Operation(
+            summary = "결제 알림 거래 내역 추가",
+            description = "클라이언트가 결제 알림에서 파싱한 제목과 금액을 전달하면, Gemini Flash 모델로 카테고리를 추천받아 지출 거래 내역을 추가합니다.",
+            tags = {"Transaction"}
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "결제 알림 거래 내역 추가 성공", content = @Content),
+            @ApiResponse(responseCode = "400", description = "요청 본문 검증 실패", content = @Content),
+            @ApiResponse(responseCode = "401", description = "인증 실패", content = @Content)
+    })
+    void createPaymentNotificationTransaction(
+            @RequestBody(
+                    required = true,
+                    description = "결제 알림에서 파싱한 거래 정보",
+                    content = @Content(schema = @Schema(implementation = CreatePaymentNotificationTransactionRequest.class))
+            )
+            @Valid
+            CreatePaymentNotificationTransactionRequest request
     );
 
     @Operation(

@@ -6,6 +6,7 @@ import org.example.bankramenserver.domain.transaction.presentation.dto.MonthlyEx
 import org.example.bankramenserver.domain.transaction.presentation.dto.MonthlyIncomeTransactionListResponse;
 import org.example.bankramenserver.domain.transaction.presentation.dto.RecentTransactionListResponse;
 import org.example.bankramenserver.domain.transaction.presentation.dto.TransactionHistoryResponse;
+import org.example.bankramenserver.domain.transaction.service.CreatePaymentNotificationTransactionService;
 import org.example.bankramenserver.domain.transaction.service.CreateTransactionService;
 import org.example.bankramenserver.domain.transaction.service.DeleteTransactionService;
 import org.example.bankramenserver.domain.transaction.service.GetMonthlyExpenseTransactionListService;
@@ -57,6 +58,9 @@ class TransactionControllerTest {
     private CreateTransactionService createTransactionService;
 
     @Mock
+    private CreatePaymentNotificationTransactionService createPaymentNotificationTransactionService;
+
+    @Mock
     private DeleteTransactionService deleteTransactionService;
 
     @Mock
@@ -71,6 +75,7 @@ class TransactionControllerTest {
                         getMonthlyExpenseTransactionListService,
                         getRecentTransactionListService,
                         createTransactionService,
+                        createPaymentNotificationTransactionService,
                         deleteTransactionService,
                         updateTransactionCategoryService
                 ))
@@ -113,6 +118,36 @@ class TransactionControllerTest {
                 .andExpect(status().isCreated());
 
         verify(createTransactionService).execute(any());
+    }
+
+    @Test
+    void createPaymentNotificationTransactionReturnsCreated() throws Exception {
+        mockMvc.perform(post("/transactions/payment-notifications")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "스타벅스 강남점",
+                                  "amount": 4500
+                                }
+                                """))
+                .andExpect(status().isCreated());
+
+        verify(createPaymentNotificationTransactionService).execute(any());
+    }
+
+    @Test
+    void createPaymentNotificationTransactionRejectsInvalidRequest() throws Exception {
+        mockMvc.perform(post("/transactions/payment-notifications")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "",
+                                  "amount": 0
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(createPaymentNotificationTransactionService);
     }
 
     @Test
