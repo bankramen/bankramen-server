@@ -5,14 +5,17 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.global.common.BaseEntity;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-import java.util.UUID;
 
 @Entity
 @Getter
-@Table(name = "device_token")
+@Table(
+        name = "device_token",
+        indexes = {
+                @Index(name = "idx_device_token_user_id", columnList = "user_id")
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DeviceToken extends BaseEntity {
 
@@ -20,20 +23,24 @@ public class DeviceToken extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "BINARY(16)")
-    @JdbcTypeCode(SqlTypes.BINARY)
-    private UUID memberId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 512)
     private String token;
 
     @Builder
-    public DeviceToken(UUID memberId, String token) { // Changed parameter type to UUID
-        this.memberId = memberId;
+    public DeviceToken(User user, String token) {
+        this.user = user;
         this.token = token;
     }
 
-    public void updateToken(String newToken) {
-        this.token = newToken;
+    public void updateUser(User user) {
+        this.user = user;
+    }
+
+    public void updateToken(String token) {
+        this.token = token;
     }
 }
