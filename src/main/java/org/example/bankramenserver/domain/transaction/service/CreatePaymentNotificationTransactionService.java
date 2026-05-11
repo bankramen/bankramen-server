@@ -4,16 +4,19 @@ import lombok.RequiredArgsConstructor;
 import org.example.bankramenserver.domain.category.domain.Category;
 import org.example.bankramenserver.domain.transaction.domain.Transaction;
 import org.example.bankramenserver.domain.transaction.domain.repository.TransactionRepository;
+import org.example.bankramenserver.domain.transaction.event.PaymentTransactionRecordedEvent;
 import org.example.bankramenserver.domain.transaction.presentation.dto.CreatePaymentNotificationTransactionRequest;
 import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.domain.user.domain.repository.UserRepository;
 import org.example.bankramenserver.domain.user.facade.UserFacade;
 import org.example.bankramenserver.global.ai.CategoryRecommendationClient;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,13 +26,15 @@ public class CreatePaymentNotificationTransactionService {
     private final CategoryRecommendationClient categoryRecommendationClient;
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final Clock clock;
 
     @Transactional
     public void execute(CreatePaymentNotificationTransactionRequest request) {
         Category recommendedCategory = categoryRecommendationClient.recommend(request.title())
                 .orElse(Category.UNCATEGORIZED);
-        User currentUser = userRepository.getReferenceById(userFacade.getCurrentUserId());
+        UUID currentUserId = userFacade.getCurrentUserId();
+        User currentUser = userRepository.getReferenceById(currentUserId);
 
         Transaction transaction = Transaction.builder()
                 .user(currentUser)
@@ -42,5 +47,12 @@ public class CreatePaymentNotificationTransactionService {
                 .build();
 
         transactionRepository.save(transaction);
+        applicationEventPublisher.publishEvent(new PaymentTransactionRecordedEvent(
+                currentUserId,
+                transaction.getId(),
+                transaction.getDescription(),
+                transaction.getAmount(),
+                transaction.getCategory()
+        ));
     }
 }

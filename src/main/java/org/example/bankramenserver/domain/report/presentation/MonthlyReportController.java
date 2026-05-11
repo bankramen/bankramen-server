@@ -6,6 +6,7 @@ import org.example.bankramenserver.domain.report.presentation.dto.MonthlyCategor
 import org.example.bankramenserver.domain.report.service.GetMonthlyAmountSummaryService;
 import org.example.bankramenserver.domain.report.service.GetMonthlyCategoryExpenseListService;
 import org.example.bankramenserver.global.document.MonthlyReportApiDocument;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/reports/monthly")
+@RequestMapping(value = "/reports/monthly", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MonthlyReportController implements MonthlyReportApiDocument {
 
     private final GetMonthlyAmountSummaryService getMonthlyAmountSummaryService;

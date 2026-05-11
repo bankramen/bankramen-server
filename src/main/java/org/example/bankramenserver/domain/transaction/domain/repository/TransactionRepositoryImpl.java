@@ -77,4 +77,17 @@ public class TransactionRepositoryImpl implements TransactionRepositoryCustom {
                 .limit(limit)
                 .fetch();
     }
+
+    @Override
+    public List<UUID> findUserIdsHavingTransactionsBetween(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        return jpaQueryFactory
+                .select(transaction.user.id)
+                .distinct()
+                .from(transaction)
+                .where(transaction.transactionDate.between(startDate, endDate))
+                .fetch();
+    }
 }
