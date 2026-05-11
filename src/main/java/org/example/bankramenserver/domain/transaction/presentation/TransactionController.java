@@ -17,6 +17,7 @@ import org.example.bankramenserver.domain.transaction.service.GetMonthlyIncomeTr
 import org.example.bankramenserver.domain.transaction.service.UpdateTransactionCategoryService;
 import org.example.bankramenserver.global.document.TransactionApiDocument;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,7 +33,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/transactions")
+@RequestMapping(value = "/transactions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TransactionController implements TransactionApiDocument {
 
     private final GetMonthlyIncomeTransactionListService getMonthlyIncomeTransactionListService;

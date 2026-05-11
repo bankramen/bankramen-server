@@ -61,3 +61,7 @@ gemini:
   api-key: ${GEMINI_API_KEY}
   model: ${GEMINI_MODEL}
   base-url: ${GEMINI_BASE_URL}
+
+fcm:
+  enabled: ${FCM_ENABLED:false}
+  credentials-path: ${FCM_CREDENTIALS_PATH:/config/bankramen.json}

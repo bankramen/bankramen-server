@@ -16,7 +16,8 @@ import java.util.UUID;
 @Table(name = "push_notifications",
         indexes = {
                 @Index(name = "idx_push_user_read", columnList = "user_id, is_read"),
-                @Index(name = "idx_push_user_sent", columnList = "user_id, sent_at")
+                @Index(name = "idx_push_user_sent", columnList = "user_id, sent_at"),
+                @Index(name = "idx_push_user_type_reference", columnList = "user_id, type, reference_key")
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -42,6 +43,9 @@ public class PushNotification {
     @Column(name = "body", nullable = false, columnDefinition = "TEXT")
     private String body;
 
+    @Column(name = "reference_key")
+    private String referenceKey;
+
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
@@ -50,11 +54,12 @@ public class PushNotification {
     private LocalDateTime sentAt;
 
     @Builder
-    public PushNotification(User user, NotificationType type, String title, String body) {
+    public PushNotification(User user, NotificationType type, String title, String body, String referenceKey) {
         this.user = user;
         this.type = type;
         this.title = title;
         this.body = body;
+        this.referenceKey = referenceKey;
         this.isRead = false;
     }
 
@@ -63,6 +68,6 @@ public class PushNotification {
     }
 
     public enum NotificationType {
-        RECURRING_ALERT, PATTERN_DETECTED, MONTHLY_REPORT
+        PAYMENT_RECORDED, RECURRING_ALERT, PATTERN_DETECTED, MONTHLY_REPORT
     }
 }

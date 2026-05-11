@@ -23,6 +23,10 @@ public enum ErrorCode {
     // Transaction
     TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "거래 내역을 찾을 수 없습니다."),
 
+    // FCM
+    FCM_CREDENTIALS_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "FCM 인증 정보가 설정되지 않았습니다."),
+    FCM_SEND_FAILED(HttpStatus.BAD_GATEWAY, "FCM 푸시 알림 전송에 실패했습니다."),
+
     // Common
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");

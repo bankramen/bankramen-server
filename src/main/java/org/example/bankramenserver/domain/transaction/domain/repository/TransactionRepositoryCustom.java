@@ -19,4 +19,9 @@ public interface TransactionRepositoryCustom {
             UUID userId,
             int limit
     );
+
+    List<UUID> findUserIdsHavingTransactionsBetween(
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }

@@ -3,6 +3,7 @@ package org.example.bankramenserver.domain.transaction.service;
 import org.example.bankramenserver.domain.category.domain.Category;
 import org.example.bankramenserver.domain.transaction.domain.Transaction;
 import org.example.bankramenserver.domain.transaction.domain.repository.TransactionRepository;
+import org.example.bankramenserver.domain.transaction.event.PaymentTransactionRecordedEvent;
 import org.example.bankramenserver.domain.transaction.presentation.dto.CreatePaymentNotificationTransactionRequest;
 import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.domain.user.domain.repository.UserRepository;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.springframework.context.ApplicationEventPublisher;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
@@ -23,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +44,9 @@ class CreatePaymentNotificationTransactionServiceTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private CreatePaymentNotificationTransactionService service;
 
     @BeforeEach
@@ -51,6 +57,7 @@ class CreatePaymentNotificationTransactionServiceTest {
                 categoryRecommendationClient,
                 userRepository,
                 transactionRepository,
+                applicationEventPublisher,
                 fixedClock
         );
     }
@@ -74,6 +81,7 @@ class CreatePaymentNotificationTransactionServiceTest {
 
         Transaction savedTransaction = captureSavedTransaction();
 
+        verify(applicationEventPublisher).publishEvent(any(PaymentTransactionRecordedEvent.class));
         assertThat(savedTransaction.getUser()).isEqualTo(currentUser);
         assertThat(savedTransaction.getCategory()).isEqualTo(Category.CAFE_SNACK);
         assertThat(savedTransaction.getType()).isEqualTo(Transaction.TransactionType.EXPENSE);
