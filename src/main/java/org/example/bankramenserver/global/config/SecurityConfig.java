@@ -56,7 +56,12 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers("/auth/kakao/**").permitAll()
-                        .requestMatchers("/reports/**", "/transactions/**", "/categories/**").authenticated()
+                        .requestMatchers(
+                                "/reports/**",
+                                "/transactions/**",
+                                "/categories/**",
+                                "/push-notifications/**"
+                        ).authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
