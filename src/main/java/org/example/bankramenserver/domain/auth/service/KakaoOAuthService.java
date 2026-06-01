@@ -2,8 +2,8 @@ package org.example.bankramenserver.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.bankramenserver.domain.auth.dto.KakaoTokenResponse;
-import org.example.bankramenserver.domain.auth.dto.KakaoUserResponse;
+import org.example.bankramenserver.domain.auth.dto.response.KakaoTokenResponse;
+import org.example.bankramenserver.domain.auth.dto.response.KakaoUserResponse;
 import org.example.bankramenserver.domain.auth.exception.KaKaoTokenRequestFailedException;
 import org.example.bankramenserver.domain.auth.exception.KaKaoUserInfoRequestFailedException;
 import org.example.bankramenserver.domain.auth.exception.InvalidTokenException;
