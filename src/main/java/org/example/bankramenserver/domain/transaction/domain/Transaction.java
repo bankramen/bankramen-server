@@ -1,19 +1,16 @@
 package org.example.bankramenserver.domain.transaction.domain;
 
-import org.example.bankramenserver.domain.user.domain.User;
-import org.example.bankramenserver.domain.notification.domain.NotificationSource;
-import org.example.bankramenserver.domain.category.domain.Category;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.bankramenserver.domain.category.domain.Category;
+import org.example.bankramenserver.domain.push.domain.PushNotification;
+import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.global.common.BaseEntity;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -21,7 +18,8 @@ import java.util.UUID;
         indexes = {
                 @Index(name = "idx_transaction_user_type_date", columnList = "user_id, type, transaction_date"),
                 @Index(name = "idx_transaction_user_category", columnList = "user_id, category"),
-                @Index(name = "idx_transaction_user_date", columnList = "user_id, transaction_date")
+                @Index(name = "idx_transaction_user_date", columnList = "user_id, transaction_date"),
+                @Index(name = "idx_transaction_user_desc_amount_date", columnList = "user_id, description, amount, transaction_date")
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -37,8 +35,8 @@ public class Transaction extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notification_source_id")
-    private NotificationSource notificationSource;
+    @JoinColumn(name = "push_notification_id")
+    private PushNotification pushNotification;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false)
@@ -65,11 +63,11 @@ public class Transaction extends BaseEntity {
     private LocalDate transactionDate;
 
     @Builder
-    public Transaction(User user, NotificationSource notificationSource, Category category,
+    public Transaction(User user, PushNotification pushNotification, Category category,
                        TransactionType type, Long amount, String description,
                        TransactionSource source, String rawNotificationText, LocalDate transactionDate) {
         this.user = user;
-        this.notificationSource = notificationSource;
+        this.pushNotification = pushNotification;
         this.category = category;
         this.type = type;
         this.amount = amount;
