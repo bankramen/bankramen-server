@@ -24,4 +24,12 @@ public interface TransactionRepositoryCustom {
             LocalDate startDate,
             LocalDate endDate
     );
+
+    boolean existsSameExpenseTransactionBetween(
+            UUID userId,
+            String description,
+            Long amount,
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }

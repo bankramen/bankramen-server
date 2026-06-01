@@ -90,4 +90,27 @@ public class TransactionRepositoryImpl implements TransactionRepositoryCustom {
                 .where(transaction.transactionDate.between(startDate, endDate))
                 .fetch();
     }
+
+    @Override
+    public boolean existsSameExpenseTransactionBetween(
+            UUID userId,
+            String description,
+            Long amount,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        Integer result = jpaQueryFactory
+                .selectOne()
+                .from(transaction)
+                .where(
+                        transaction.user.id.eq(userId),
+                        transaction.type.eq(Transaction.TransactionType.EXPENSE),
+                        transaction.description.eq(description),
+                        transaction.amount.eq(amount),
+                        transaction.transactionDate.between(startDate, endDate)
+                )
+                .fetchFirst();
+
+        return result != null;
+    }
 }
