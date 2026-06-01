@@ -1,33 +1,27 @@
 package org.example.bankramenserver.domain.recurring.domain;
 
-import org.example.bankramenserver.domain.user.domain.User;
-import org.example.bankramenserver.domain.category.domain.Category;
-import org.example.bankramenserver.domain.notification.domain.NotificationSource;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.*;
+import org.example.bankramenserver.domain.category.domain.Category;
+import org.example.bankramenserver.domain.transaction.domain.Transaction;
+import org.example.bankramenserver.domain.user.domain.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "recurring_payments",
-        indexes = {
-                @Index(name = "idx_recurring_user_confirmed", columnList = "user_id, is_confirmed"),
-                @Index(name = "idx_recurring_next_billing", columnList = "next_billing_date")
-        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
+@Builder
+@Table(name = "recurring_payments")
 public class RecurringPayment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(name = "id")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,67 +29,90 @@ public class RecurringPayment {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false)
+    @Column(nullable = false)
     private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notification_source_id")
-    private NotificationSource notificationSource;
-
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "amount", nullable = false)
+    @Column(nullable = false)
     private Long amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "cycle", nullable = false)
+    @Column(nullable = false)
     private Cycle cycle;
 
-    @Column(name = "billing_day", nullable = false)
+    @Column(nullable = false)
     private int billingDay;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
-
-    @Column(name = "is_confirmed", nullable = false)
-    private boolean isConfirmed = false;
-
-    @Column(name = "next_billing_date")
+    @Column(nullable = false)
     private LocalDateTime nextBillingDate;
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RegistrationType registrationType;
 
-    @Builder
-    public RecurringPayment(User user, Category category, NotificationSource notificationSource,
-                            String name, Long amount, Cycle cycle, int billingDay, LocalDateTime nextBillingDate) {
-        this.user = user;
-        this.category = category;
-        this.notificationSource = notificationSource;
-        this.name = name;
-        this.amount = amount;
-        this.cycle = cycle;
-        this.billingDay = billingDay;
-        this.isActive = true;
-        this.isConfirmed = false;
-        this.nextBillingDate = nextBillingDate;
-    }
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean confirmed = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
+    @OneToMany(mappedBy = "recurringPayment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<RecurringPaymentTransaction> transactions = new ArrayList<>();
 
     public void confirm() {
-        this.isConfirmed = true;
+        this.confirmed = true;
     }
 
     public void deactivate() {
-        this.isActive = false;
+        this.active = false;
     }
 
-    public void updateNextBillingDate(LocalDateTime nextBillingDate) {
+    public void updateAfterPaymentDetected(LocalDateTime nextBillingDate) {
         this.nextBillingDate = nextBillingDate;
     }
 
+    public LocalDateTime calculateNextBillingDate() {
+        if (cycle == Cycle.MONTHLY) {
+            return nextBillingDate.plusMonths(1);
+        }
+
+        return nextBillingDate.plusYears(1);
+    }
+
+    public void addTransaction(
+            Transaction transaction,
+            RecurringPaymentTransaction.MatchType matchType,
+            LocalDateTime matchedAt
+    ) {
+        boolean alreadyAdded = transactions.stream()
+                .anyMatch(item -> item.getTransaction().getId().equals(transaction.getId()));
+
+        if (alreadyAdded) {
+            return;
+        }
+
+        RecurringPaymentTransaction recurringPaymentTransaction = RecurringPaymentTransaction.builder()
+                .recurringPayment(this)
+                .transaction(transaction)
+                .matchType(matchType)
+                .matchedAt(matchedAt)
+                .build();
+
+        this.transactions.add(recurringPaymentTransaction);
+    }
+
     public enum Cycle {
-        MONTHLY, YEARLY
+        MONTHLY,
+        YEARLY
+    }
+
+    public enum RegistrationType {
+        MANUAL,
+        AUTO_DETECTED
     }
 }
