@@ -1,7 +1,7 @@
 package org.example.bankramenserver.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.bankramenserver.domain.auth.dto.KakaoUserResponse;
+import org.example.bankramenserver.domain.auth.dto.response.KakaoUserResponse;
 import org.example.bankramenserver.domain.user.exception.UserInfoNotFound;
 import org.example.bankramenserver.domain.user.domain.repository.UserRepository;
 import org.example.bankramenserver.domain.user.domain.User;
