@@ -23,7 +23,7 @@ public class RefreshTokenService {
                 PREFIX + refreshToken,
                 userId.toString(),
                 jwtProperties.getRefreshExp(),
-                TimeUnit.MILLISECONDS
+                TimeUnit.SECONDS
         );
     }
 
