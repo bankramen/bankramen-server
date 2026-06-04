@@ -37,7 +37,10 @@ public class CheckRecurringPaymentBillingService {
         LocalDateTime end = today.plusDays(1).atStartOfDay();
 
         recurringPaymentRepository
-                .findAllByActiveTrueAndConfirmedTrueAndNextBillingDateBetween(start, end)
+                .findAllByActiveTrueAndConfirmedTrueAndNextBillingDateGreaterThanEqualAndNextBillingDateLessThan(
+                        start,
+                        end
+                )
                 .forEach(this::check);
     }
 

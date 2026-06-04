@@ -30,4 +30,9 @@ public interface RecurringPaymentRepository extends JpaRepository<RecurringPayme
             Long amount,
             RecurringPayment.Cycle cycle
     );
+
+    List<RecurringPayment> findAllByActiveTrueAndConfirmedTrueAndNextBillingDateGreaterThanEqualAndNextBillingDateLessThan(
+            LocalDateTime start,
+            LocalDateTime end
+    );
 }
