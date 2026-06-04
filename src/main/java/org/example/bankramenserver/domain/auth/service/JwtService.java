@@ -12,31 +12,35 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class JwtService {
 
     private final SecretKey secretKey;
-    private final long accessExp;
-    private final long refreshExp;
+    private final long accessExpSeconds;
+    private final long refreshExpSeconds;
 
     public JwtService(
             @Value("${jwt.secretKey}") String secret,
-            @Value("${jwt.accessExp}") long accessExp,
-            @Value("${jwt.refreshExp}") long refreshExp
+            @Value("${jwt.accessExp}") long accessExpSeconds,
+            @Value("${jwt.refreshExp}") long refreshExpSeconds
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        this.accessExp = accessExp;
-        this.refreshExp = refreshExp;
+        this.accessExpSeconds = accessExpSeconds;
+        this.refreshExpSeconds = refreshExpSeconds;
     }
 
     public String generateAccessToken(UUID userId) {
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("type", "access")
-                .id(UUID.randomUUID().toString()) // jti
+                .id(UUID.randomUUID().toString())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + accessExp))
+                .expiration(new Date(
+                        System.currentTimeMillis()
+                                + TimeUnit.SECONDS.toMillis(accessExpSeconds)
+                ))
                 .signWith(secretKey)
                 .compact();
     }
@@ -45,9 +49,12 @@ public class JwtService {
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("type", "refresh")
-                .id(UUID.randomUUID().toString()) // jti
+                .id(UUID.randomUUID().toString())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + refreshExp))
+                .expiration(new Date(
+                        System.currentTimeMillis()
+                                + TimeUnit.SECONDS.toMillis(refreshExpSeconds)
+                ))
                 .signWith(secretKey)
                 .compact();
     }

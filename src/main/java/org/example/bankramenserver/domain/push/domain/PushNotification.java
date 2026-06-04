@@ -68,6 +68,14 @@ public class PushNotification {
     }
 
     public enum NotificationType {
-        PAYMENT_RECORDED, RECURRING_ALERT, PATTERN_DETECTED, MONTHLY_REPORT
+        PAYMENT_RECORDED,
+        RECURRING_ALERT,
+        PATTERN_DETECTED,
+        MONTHLY_REPORT,
+
+        RECURRING_CANDIDATE,
+        RECURRING_PAYMENT_REMINDER,
+        RECURRING_PAYMENT_CONFIRMED,
+        RECURRING_PAYMENT_MISSING
     }
 }

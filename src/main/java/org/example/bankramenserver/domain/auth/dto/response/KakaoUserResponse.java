@@ -1,4 +1,4 @@
-package org.example.bankramenserver.domain.auth.dto;
+package org.example.bankramenserver.domain.auth.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.example.bankramenserver.global.common.BaseEntity;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -28,12 +29,16 @@ public class DeviceToken extends BaseEntity {
     private String token;
 
     @Builder
-    public DeviceToken(UUID memberId, String token) { // Changed parameter type to UUID
+    public DeviceToken(UUID memberId, String token) {
         this.memberId = memberId;
         this.token = token;
     }
 
-    public void updateToken(String newToken) {
-        this.token = newToken;
+    public void updateMember(UUID memberId) {
+        this.memberId = memberId;
+    }
+
+    public void updateToken(String token) {
+        this.token = token;
     }
 }
