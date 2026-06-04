@@ -9,6 +9,7 @@ import org.example.bankramenserver.domain.transaction.domain.Transaction;
 import org.example.bankramenserver.domain.transaction.domain.repository.TransactionRepository;
 import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.domain.user.domain.repository.UserRepository;
+import org.example.bankramenserver.global.util.MoneyFormatter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +35,8 @@ public class DetectRecurringPaymentService {
         Transaction current = transactionRepository.findById(transactionId)
                 .orElseThrow();
 
-        if (current.getType() != Transaction.TransactionType.EXPENSE) {
-            return;
-        }
-
-        if (current.getDescription() == null || current.getDescription().isBlank()) {
-            return;
-        }
+        if (current.getType() != Transaction.TransactionType.EXPENSE) return;
+        if (current.getDescription() == null || current.getDescription().isBlank()) return;
 
         detectMonthly(current);
         detectYearly(current);
@@ -79,16 +75,16 @@ public class DetectRecurringPaymentService {
     }
 
     private void createCandidateIfNotExists(Transaction current, RecurringPayment.Cycle cycle) {
-        boolean alreadyExists = recurringPaymentRepository.existsByUser_IdAndNameAndAmountAndCycleAndActiveTrue(
-                current.getUser().getId(),
-                current.getDescription(),
-                current.getAmount(),
-                cycle
-        );
 
-        if (alreadyExists) {
-            return;
-        }
+        boolean alreadyExists = recurringPaymentRepository
+                .existsByUser_IdAndNameAndAmountAndCycleAndActiveTrue(
+                        current.getUser().getId(),
+                        current.getDescription(),
+                        current.getAmount(),
+                        cycle
+                );
+
+        if (alreadyExists) return;
 
         User user = userRepository.getReferenceById(current.getUser().getId());
 
@@ -111,7 +107,10 @@ public class DetectRecurringPaymentService {
                 PushNotification.NotificationType.RECURRING_CANDIDATE,
                 "정기결제 같아요",
                 "%s %s원이 반복 결제되고 있어요. 정기결제로 등록할까요?"
-                        .formatted(current.getDescription(), current.getAmount()),
+                        .formatted(
+                                current.getDescription(),
+                                MoneyFormatter.format(current.getAmount())
+                        ),
                 recurringPayment.getId().toString(),
                 Map.of(
                         "type", PushNotification.NotificationType.RECURRING_CANDIDATE.name(),
@@ -124,7 +123,6 @@ public class DetectRecurringPaymentService {
         if (cycle == RecurringPayment.Cycle.MONTHLY) {
             return transactionDate.plusMonths(1).atStartOfDay();
         }
-
         return transactionDate.plusYears(1).atStartOfDay();
     }
 }
