@@ -2,26 +2,20 @@ package org.example.bankramenserver.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.bankramenserver.domain.auth.dto.response.AuthTokenResponse;
 import org.example.bankramenserver.domain.auth.dto.response.KakaoTokenResponse;
 import org.example.bankramenserver.domain.auth.dto.response.KakaoUserResponse;
 import org.example.bankramenserver.domain.auth.exception.KaKaoTokenRequestFailedException;
 import org.example.bankramenserver.domain.auth.exception.KaKaoUserInfoRequestFailedException;
-import org.example.bankramenserver.domain.auth.exception.InvalidTokenException;
 import org.example.bankramenserver.domain.user.domain.User;
 import org.example.bankramenserver.domain.user.service.UserService;
-import org.example.bankramenserver.global.jwt.JwtProperties;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -44,91 +38,81 @@ public class KakaoOAuthService {
     private String clientSecret;
 
     private final RestTemplate restTemplate;
-    private final RedisTemplate<String, String> redisTemplate;
     private final UserService userService;
     private final JwtService jwtService;
-    private final JwtProperties jwtProperties;
+    private final RefreshTokenService refreshTokenService;
 
-    public Map<String, String> kakaoLogin(String code) {
+    public AuthTokenResponse kakaoLogin(String code) {
+
         KakaoTokenResponse token = getAccessToken(code);
-        KakaoUserResponse kakaoUser = getUserInfo(token.accessToken());
 
-        User user = userService.saveOrUpdate(kakaoUser);
+        KakaoUserResponse kakaoUser =
+                getUserInfo(token.accessToken());
 
-        String accessToken = jwtService.generateAccessToken(user.getId());
-        String refreshToken = jwtService.generateRefreshToken(user.getId());
+        User user =
+                userService.saveOrUpdate(kakaoUser);
 
-        long refreshExp = jwtProperties.getRefreshExp();
+        String accessToken =
+                jwtService.generateAccessToken(user.getId());
 
-        redisTemplate.opsForValue()
-                .set(
-                        "refresh:" + refreshToken,
-                        user.getId().toString(),
-                        refreshExp,
-                        TimeUnit.SECONDS
-                );
+        String refreshToken =
+                jwtService.generateRefreshToken(user.getId());
 
-        return Map.of(
-                "accessToken", accessToken,
-                "refreshToken", refreshToken
+        refreshTokenService.save(
+                refreshToken,
+                user.getId()
+        );
+
+        return new AuthTokenResponse(
+                accessToken,
+                refreshToken
         );
     }
 
-    private KakaoTokenResponse getAccessToken(String code) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    public AuthTokenResponse reissue(String refreshToken) {
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", clientId);
-        params.add("redirect_uri", redirectUri);
-        params.add("code", code);
-        params.add("client_secret", clientSecret);
+        var userId =
+                jwtService.validateRefreshToken(refreshToken);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        refreshTokenService.validate(
+                refreshToken,
+                userId
+        );
 
-        try {
-            KakaoTokenResponse response = restTemplate.postForObject(
-                    authUrl + "/token",
-                    request,
-                    KakaoTokenResponse.class
-            );
-            if (response == null) {
-                throw KaKaoTokenRequestFailedException.EXCEPTION;
-            }
-            return response;
-        } catch (Exception e) {
-            log.error("카카오 토큰 요청 실패", e);
-            throw KaKaoTokenRequestFailedException.EXCEPTION;
-        }
+        refreshTokenService.delete(refreshToken);
+
+        String newAccessToken =
+                jwtService.generateAccessToken(userId);
+
+        String newRefreshToken =
+                jwtService.generateRefreshToken(userId);
+
+        refreshTokenService.save(
+                newRefreshToken,
+                userId
+        );
+
+        return new AuthTokenResponse(
+                newAccessToken,
+                newRefreshToken
+        );
     }
 
-    private KakaoUserResponse getUserInfo(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+    public void logout(String refreshToken) {
 
-        HttpEntity<Void> request = new HttpEntity<>(headers);
+        var userId =
+                jwtService.validateRefreshToken(refreshToken);
 
-        try {
-            KakaoUserResponse response = restTemplate.exchange(
-                    apiUrl + "/v2/user/me",
-                    HttpMethod.GET,
-                    request,
-                    KakaoUserResponse.class
-            ).getBody();
+        refreshTokenService.validate(
+                refreshToken,
+                userId
+        );
 
-            if (response == null) {
-                throw KaKaoUserInfoRequestFailedException.EXCEPTION;
-            }
-
-            return response;
-        } catch (Exception e) {
-            log.error("카카오 사용자 정보 요청 실패", e);
-            throw KaKaoUserInfoRequestFailedException.EXCEPTION;
-        }
+        refreshTokenService.delete(refreshToken);
     }
 
     public String getLoginUrl(String state) {
+
         return UriComponentsBuilder.fromUriString(authUrl)
                 .path("/authorize")
                 .queryParam("response_type", "code")
@@ -137,27 +121,80 @@ public class KakaoOAuthService {
                 .queryParam("state", state)
                 .encode()
                 .toUriString();
-
     }
 
-    public void logout(String refreshToken) {
-        redisTemplate.delete("refresh:" + refreshToken);
+    private KakaoTokenResponse getAccessToken(String code) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(
+                MediaType.APPLICATION_FORM_URLENCODED
+        );
+
+        MultiValueMap<String, String> params =
+                new LinkedMultiValueMap<>();
+
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", clientId);
+        params.add("redirect_uri", redirectUri);
+        params.add("code", code);
+        params.add("client_secret", clientSecret);
+
+        HttpEntity<MultiValueMap<String, String>> request =
+                new HttpEntity<>(params, headers);
+
+        try {
+
+            KakaoTokenResponse response =
+                    restTemplate.postForObject(
+                            authUrl + "/token",
+                            request,
+                            KakaoTokenResponse.class
+                    );
+
+            if (response == null) {
+                throw KaKaoTokenRequestFailedException.EXCEPTION;
+            }
+
+            return response;
+
+        } catch (Exception e) {
+
+            log.error("카카오 토큰 요청 실패", e);
+
+            throw KaKaoTokenRequestFailedException.EXCEPTION;
+        }
     }
 
-    public String reissue(String refreshToken) {
-        UUID userIdFromToken = jwtService.validateRefreshToken(refreshToken);
+    private KakaoUserResponse getUserInfo(String accessToken) {
 
-        String storedUserId = redisTemplate.opsForValue()
-                .get("refresh:" + refreshToken);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
 
-        if (storedUserId == null) {
-            throw InvalidTokenException.EXCEPTION;
+        HttpEntity<Void> request =
+                new HttpEntity<>(headers);
+
+        try {
+
+            KakaoUserResponse response =
+                    restTemplate.exchange(
+                                    apiUrl + "/v2/user/me",
+                                    HttpMethod.GET,
+                                    request,
+                                    KakaoUserResponse.class
+                            )
+                            .getBody();
+
+            if (response == null) {
+                throw KaKaoUserInfoRequestFailedException.EXCEPTION;
+            }
+
+            return response;
+
+        } catch (Exception e) {
+
+            log.error("카카오 사용자 정보 요청 실패", e);
+
+            throw KaKaoUserInfoRequestFailedException.EXCEPTION;
         }
-
-        if (!userIdFromToken.toString().equals(storedUserId)) {
-            throw InvalidTokenException.EXCEPTION;
-        }
-
-        return jwtService.generateAccessToken(userIdFromToken);
     }
 }
