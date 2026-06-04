@@ -33,10 +33,12 @@ public class CheckRecurringPaymentBillingService {
     public void execute() {
         LocalDate today = LocalDate.now(clock);
 
-        recurringPaymentRepository.findAllByActiveTrueAndConfirmedTrueAndNextBillingDateBetween(
-                today.atStartOfDay(),
-                today.plusDays(1).atStartOfDay()
-        ).forEach(this::check);
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay();
+
+        recurringPaymentRepository
+                .findAllByActiveTrueAndConfirmedTrueAndNextBillingDateBetween(start, end)
+                .forEach(this::check);
     }
 
     private void check(RecurringPayment recurringPayment) {
@@ -79,7 +81,6 @@ public class CheckRecurringPaymentBillingService {
         if (cycle == RecurringPayment.Cycle.MONTHLY) {
             return MONTHLY_TOLERANCE_DAYS;
         }
-
         return YEARLY_TOLERANCE_DAYS;
     }
 

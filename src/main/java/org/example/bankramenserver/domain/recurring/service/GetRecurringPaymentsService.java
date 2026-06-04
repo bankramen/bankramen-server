@@ -22,6 +22,7 @@ public class GetRecurringPaymentsService {
 
     @Transactional(readOnly = true)
     public RecurringPaymentListResponse execute(UUID userId) {
+
         List<RecurringPayment> recurringPayments =
                 recurringPaymentRepository.findAllByUser_IdAndActiveTrueOrderByNextBillingDateAsc(userId);
 
@@ -39,14 +40,11 @@ public class GetRecurringPaymentsService {
                         .stream()
                         .mapToLong(RecurringPayment::getAmount)
                         .sum();
-
-        List<RecurringPaymentResponse> items = recurringPayments.stream()
-                .map(RecurringPaymentResponse::from)
-                .toList();
-
         return new RecurringPaymentListResponse(
                 monthlyScheduledTotalAmount,
-                items
+                recurringPayments.stream()
+                        .map(RecurringPaymentResponse::from)
+                        .toList()
         );
     }
 }

@@ -25,12 +25,14 @@ public record RecurringPaymentResponse(
                 .max(LocalDate::compareTo)
                 .orElse(null);
 
+        var category = recurringPayment.getCategory();
+
         return new RecurringPaymentResponse(
                 recurringPayment.getId(),
                 recurringPayment.getName(),
                 recurringPayment.getAmount(),
-                recurringPayment.getCategory().name(),
-                recurringPayment.getCategory().getDisplayName(),
+                category != null ? category.name() : null,
+                category != null ? category.getDisplayName() : null,
                 recurringPayment.getCycle(),
                 recurringPayment.getBillingDay(),
                 recurringPayment.getNextBillingDate().toLocalDate(),

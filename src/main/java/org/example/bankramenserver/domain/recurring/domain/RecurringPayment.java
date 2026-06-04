@@ -7,6 +7,7 @@ import org.example.bankramenserver.domain.transaction.domain.Transaction;
 import org.example.bankramenserver.domain.user.domain.User;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -60,9 +61,14 @@ public class RecurringPayment {
     @Builder.Default
     private boolean active = true;
 
-    @OneToMany(mappedBy = "recurringPayment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "recurringPayment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
-    private List<RecurringPaymentTransaction> transactions = new ArrayList<>();
+    private List<RecurringPaymentTransaction> transactions =
+            new ArrayList<>();
 
     public void confirm() {
         this.confirmed = true;
@@ -72,16 +78,31 @@ public class RecurringPayment {
         this.active = false;
     }
 
-    public void updateAfterPaymentDetected(LocalDateTime nextBillingDate) {
+    public void updateAfterPaymentDetected(
+            LocalDateTime nextBillingDate
+    ) {
         this.nextBillingDate = nextBillingDate;
     }
 
     public LocalDateTime calculateNextBillingDate() {
-        if (cycle == Cycle.MONTHLY) {
-            return nextBillingDate.plusMonths(1);
-        }
 
-        return nextBillingDate.plusYears(1);
+        LocalDateTime base = cycle == Cycle.MONTHLY
+                ? nextBillingDate.plusMonths(1)
+                : nextBillingDate.plusYears(1);
+
+        YearMonth targetMonth = YearMonth.from(base);
+
+        int actualBillingDay = Math.min(
+                billingDay,
+                targetMonth.lengthOfMonth()
+        );
+
+        return base
+                .withDayOfMonth(actualBillingDay)
+                .withHour(nextBillingDate.getHour())
+                .withMinute(nextBillingDate.getMinute())
+                .withSecond(nextBillingDate.getSecond())
+                .withNano(nextBillingDate.getNano());
     }
 
     public void addTransaction(
@@ -89,19 +110,25 @@ public class RecurringPayment {
             RecurringPaymentTransaction.MatchType matchType,
             LocalDateTime matchedAt
     ) {
+
         boolean alreadyAdded = transactions.stream()
-                .anyMatch(item -> item.getTransaction().getId().equals(transaction.getId()));
+                .anyMatch(item ->
+                        item.getTransaction()
+                                .getId()
+                                .equals(transaction.getId())
+                );
 
         if (alreadyAdded) {
             return;
         }
 
-        RecurringPaymentTransaction recurringPaymentTransaction = RecurringPaymentTransaction.builder()
-                .recurringPayment(this)
-                .transaction(transaction)
-                .matchType(matchType)
-                .matchedAt(matchedAt)
-                .build();
+        RecurringPaymentTransaction recurringPaymentTransaction =
+                RecurringPaymentTransaction.builder()
+                        .recurringPayment(this)
+                        .transaction(transaction)
+                        .matchType(matchType)
+                        .matchedAt(matchedAt)
+                        .build();
 
         this.transactions.add(recurringPaymentTransaction);
     }
