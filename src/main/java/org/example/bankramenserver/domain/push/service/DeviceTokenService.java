@@ -17,11 +17,19 @@ public class DeviceTokenService {
 
     public void save(UUID memberId, String token) {
 
-        DeviceToken deviceToken = DeviceToken.builder()
-                .memberId(memberId)
-                .token(token)
-                .build();
+        deviceTokenRepository.findByToken(token)
+                .ifPresentOrElse(
+                        existing -> existing.updateMember(memberId),
+                        () -> deviceTokenRepository.save(
+                                DeviceToken.builder()
+                                        .memberId(memberId)
+                                        .token(token)
+                                        .build()
+                        )
+                );
+    }
 
-        deviceTokenRepository.save(deviceToken);
+    public void delete(UUID memberId) {
+        deviceTokenRepository.deleteByMemberId(memberId);
     }
 }
