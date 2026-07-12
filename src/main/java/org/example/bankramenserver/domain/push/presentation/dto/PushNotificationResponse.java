@@ -120,10 +120,14 @@ public record PushNotificationResponse(
 
         private static String iconBackgroundColor(PushNotification.NotificationType type) {
             return switch (type) {
-                case RECURRING_ALERT -> "#EAF3FF";
+                case RECURRING_ALERT,
+                     PAYMENT_RECORDED,
+                     RECURRING_CANDIDATE,
+                     RECURRING_PAYMENT_REMINDER,
+                     RECURRING_PAYMENT_CONFIRMED,
+                     RECURRING_PAYMENT_MISSING -> "#EAF3FF";
                 case MONTHLY_REPORT -> "#FDF0F2";
                 case PATTERN_DETECTED -> "#FFE943";
-                case PAYMENT_RECORDED -> "#EAF3FF";
             };
         }
     }

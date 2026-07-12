@@ -36,7 +36,9 @@ out/
 ### VS Code ###
 .vscode/
 .omx/
+.omo/
 ### Local secrets / OS files ###
+.env
 .DS_Store
 **/.DS_Store
 src/main/resources/config/*.json

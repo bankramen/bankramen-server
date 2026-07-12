@@ -60,6 +60,9 @@ dependencies {
 
     // ETC
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // MCP
+    implementation 'io.modelcontextprotocol.sdk:mcp-json-jackson2:1.1.2'
 }
 
 dependencyManagement {

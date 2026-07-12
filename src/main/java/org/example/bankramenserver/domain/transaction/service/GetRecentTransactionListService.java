@@ -19,10 +19,13 @@ public class GetRecentTransactionListService {
 
     @Transactional(readOnly = true)
     public RecentTransactionListResponse execute(int limit) {
-        UUID currentUserId = userFacade.getCurrentUser().getId();
+        return execute(userFacade.getCurrentUser().getId(), limit);
+    }
 
+    @Transactional(readOnly = true)
+    public RecentTransactionListResponse execute(UUID userId, int limit) {
         return RecentTransactionListResponse.from(
-                transactionRepository.findRecentTransactionHistories(currentUserId, limit)
+                transactionRepository.findRecentTransactionHistories(userId, limit)
                         .stream()
                         .map(TransactionHistoryResponse::from)
                         .toList()

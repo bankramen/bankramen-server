@@ -23,13 +23,16 @@ public class GetMonthlyCategoryExpenseListService {
 
     @Transactional(readOnly = true)
     public MonthlyCategoryExpenseListResponse execute(int year, int month) {
-        UUID currentUserId = userFacade.getCurrentUser().getId();
+        return execute(userFacade.getCurrentUser().getId(), year, month);
+    }
 
+    @Transactional(readOnly = true)
+    public MonthlyCategoryExpenseListResponse execute(UUID userId, int year, int month) {
         YearMonth currentMonth = YearMonth.of(year, month);
         YearMonth previousMonth = currentMonth.minusMonths(1);
 
         List<CategoryExpenseRow> rows = monthlyReportRepository.findCategoryExpenseComparisons(
-                currentUserId,
+                userId,
                 currentMonth.atDay(1),
                 currentMonth.atEndOfMonth(),
                 previousMonth.atDay(1),

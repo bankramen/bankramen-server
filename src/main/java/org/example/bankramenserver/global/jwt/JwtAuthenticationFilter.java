@@ -35,6 +35,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
+        if ("/mcp".equals(path)) {
+            return true;
+        }
+
         for (String permit : PERMIT_URLS) {
             if (path.startsWith(permit)) {
                 return true;
