@@ -65,3 +65,23 @@ gemini:
 fcm:
   enabled: ${FCM_ENABLED:false}
   credentials-path: ${FCM_CREDENTIALS_PATH:/config/bankramen.json}
+
+integration:
+  dispatch-interval-ms: ${INTEGRATION_DISPATCH_INTERVAL_MS:30000}
+  connections:
+    - connection-id: hermes-personal
+      consumer-id: yuseob-finance-assistant
+      connector-type: HERMES_WEBHOOK
+      enabled: ${HERMES_WEBHOOK_ENABLED:true}
+      subscribed-events:
+        - transaction.created
+      webhook-url: ${HERMES_WEBHOOK_URL:}
+      secret: ${HERMES_WEBHOOK_SECRET:}
+
+mcp:
+  initial-connection:
+    connection-id: ${MCP_CONNECTION_ID:hermes-local}
+    consumer-id: ${MCP_CONSUMER_ID:hermes-agent}
+    linked-user-id: ${MCP_LINKED_USER_ID:}
+    enabled: ${MCP_ENABLED:true}
+    token: ${MCP_INITIAL_TOKEN:}

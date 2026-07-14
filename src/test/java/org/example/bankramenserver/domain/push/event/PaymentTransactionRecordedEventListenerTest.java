@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,7 +34,8 @@ class PaymentTransactionRecordedEventListenerTest {
                 transactionId,
                 "스타벅스 강남점",
                 4500L,
-                Category.CAFE_SNACK
+                Category.CAFE_SNACK,
+                LocalDate.of(2026, 7, 11)
         ));
 
         verify(sendPushNotificationService).execute(

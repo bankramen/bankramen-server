@@ -2,6 +2,7 @@ package org.example.bankramenserver.domain.transaction.event;
 
 import org.example.bankramenserver.domain.category.domain.Category;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record PaymentTransactionRecordedEvent(
@@ -9,6 +10,7 @@ public record PaymentTransactionRecordedEvent(
         UUID transactionId,
         String title,
         Long amount,
-        Category category
+        Category category,
+        LocalDate occurredAt
 ) {
 }

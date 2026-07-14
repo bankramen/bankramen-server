@@ -3,6 +3,7 @@ package org.example.bankramenserver.global.config;
 import lombok.RequiredArgsConstructor;
 import org.example.bankramenserver.global.error.GlobalExceptionFilter;
 import org.example.bankramenserver.global.jwt.JwtAuthenticationFilter;
+import org.example.bankramenserver.infrastructure.mcp.auth.McpBearerAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -21,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final McpBearerAuthenticationFilter mcpBearerAuthenticationFilter;
     private final GlobalExceptionFilter globalExceptionFilter;
 
     @Bean
@@ -62,6 +64,7 @@ public class SecurityConfig {
                                 "/categories/**",
                                 "/push-notifications/**"
                         ).authenticated()
+                        .requestMatchers("/mcp").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -70,8 +73,11 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class)
 
+                .addFilterBefore(mcpBearerAuthenticationFilter,
+                        JwtAuthenticationFilter.class)
+
                 .addFilterBefore(globalExceptionFilter,
-                        JwtAuthenticationFilter.class);
+                        McpBearerAuthenticationFilter.class);
 
         return http.build();
     }

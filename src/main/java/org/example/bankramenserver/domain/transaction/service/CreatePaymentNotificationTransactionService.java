@@ -52,7 +52,8 @@ public class CreatePaymentNotificationTransactionService {
                 transaction.getId(),
                 transaction.getDescription(),
                 transaction.getAmount(),
-                transaction.getCategory()
+                transaction.getCategory(),
+                transaction.getTransactionDate()
         ));
     }
 }

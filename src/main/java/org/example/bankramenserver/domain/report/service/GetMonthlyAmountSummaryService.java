@@ -22,13 +22,16 @@ public class GetMonthlyAmountSummaryService {
 
     @Transactional(readOnly = true)
     public MonthlyAmountSummaryResponse execute(int year, int month) {
-        UUID currentUserId = userFacade.getCurrentUser().getId();
+        return execute(userFacade.getCurrentUser().getId(), year, month);
+    }
 
+    @Transactional(readOnly = true)
+    public MonthlyAmountSummaryResponse execute(UUID userId, int year, int month) {
         YearMonth currentMonth = YearMonth.of(year, month);
         YearMonth previousMonth = currentMonth.minusMonths(1);
 
         AmountSummaryRow amountSummary = monthlyReportRepository.findAmountSummary(
-                currentUserId,
+                userId,
                 currentMonth.atDay(1),
                 currentMonth.atEndOfMonth(),
                 previousMonth.atDay(1),
