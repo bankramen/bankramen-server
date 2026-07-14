@@ -25,6 +25,7 @@ public class IntegrationOutboxWriter {
                 .filter(connection -> connection.subscribesTo(TRANSACTION_CREATED))
                 .forEach(connection -> outboxRepository.save(IntegrationOutbox.pending(
                         event.transactionId().toString(),
+                        event.eventId().toString(),
                         connection.connectionId(),
                         connection.connectorType(),
                         TRANSACTION_CREATED,
@@ -35,7 +36,7 @@ public class IntegrationOutboxWriter {
     private String serialize(PaymentTransactionRecordedEvent event) {
         try {
             return objectMapper.writeValueAsString(new TransactionCreatedPayload(
-                    event.transactionId().toString(),
+                    event.eventId().toString(),
                     TRANSACTION_CREATED,
                     event.userId().toString(),
                     new TransactionPayload(

@@ -28,7 +28,7 @@ class IntegrationOutboxDispatcherTest {
     void dispatchesPendingEntryThroughItsConnectionAndMarksItDelivered() throws Exception {
         IntegrationConnectionProperties properties = connections();
         IntegrationOutbox outbox = IntegrationOutbox.pending(
-                "event-1", "hermes-personal", "HERMES_WEBHOOK", "transaction.created", "{\"event_type\":\"transaction.created\"}"
+                "transaction-1", "event-1", "hermes-personal", "HERMES_WEBHOOK", "transaction.created", "{\"event_type\":\"transaction.created\"}"
         );
         when(outboxRepository.findTop50ByStatusInOrderByCreatedAtAsc(List.of(
                 IntegrationOutbox.Status.PENDING, IntegrationOutbox.Status.RETRYING
@@ -48,7 +48,7 @@ class IntegrationOutboxDispatcherTest {
     void keepsFailedDeliveryForRetryInsteadOfThrowing() throws Exception {
         IntegrationConnectionProperties properties = connections();
         IntegrationOutbox outbox = IntegrationOutbox.pending(
-                "event-1", "hermes-personal", "HERMES_WEBHOOK", "transaction.created", "{}"
+                "transaction-1", "event-1", "hermes-personal", "HERMES_WEBHOOK", "transaction.created", "{}"
         );
         when(outboxRepository.findTop50ByStatusInOrderByCreatedAtAsc(List.of(
                 IntegrationOutbox.Status.PENDING, IntegrationOutbox.Status.RETRYING

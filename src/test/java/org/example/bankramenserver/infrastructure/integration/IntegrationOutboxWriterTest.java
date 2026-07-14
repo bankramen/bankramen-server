@@ -2,6 +2,7 @@ package org.example.bankramenserver.infrastructure.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.Table;
 import org.example.bankramenserver.domain.category.domain.Category;
 import org.example.bankramenserver.domain.transaction.event.PaymentTransactionRecordedEvent;
 import org.example.bankramenserver.infrastructure.integration.domain.IntegrationConnectionProperties;
@@ -42,9 +43,10 @@ class IntegrationOutboxWriterTest {
         IntegrationOutboxWriter writer = new IntegrationOutboxWriter(outboxRepository, properties, new ObjectMapper());
         UUID userId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         UUID transactionId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        UUID eventId = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
         writer.record(new PaymentTransactionRecordedEvent(
-                userId, transactionId, "스타벅스", 4500L, Category.CAFE_SNACK, LocalDate.of(2026, 7, 11)
+                userId, transactionId, eventId, "스타벅스", 4500L, Category.CAFE_SNACK, LocalDate.of(2026, 7, 11)
         ));
 
         ArgumentCaptor<IntegrationOutbox> captor = ArgumentCaptor.forClass(IntegrationOutbox.class);
@@ -52,9 +54,22 @@ class IntegrationOutboxWriterTest {
         IntegrationOutbox outbox = captor.getValue();
         JsonNode payload = new ObjectMapper().readTree(outbox.getPayload());
         assertThat(outbox.getConnectionId()).isEqualTo("hermes-personal");
-        assertThat(outbox.getEventId()).isEqualTo(transactionId.toString());
+        assertThat(outbox.getTransactionId()).isEqualTo(transactionId.toString());
+        assertThat(outbox.getEventId()).isEqualTo(eventId.toString());
         assertThat(outbox.isPending()).isTrue();
+        assertThat(payload.path("eventId").asText()).isEqualTo(eventId.toString());
         assertThat(payload.path("event_type").asText()).isEqualTo("transaction.created");
+        assertThat(payload.path("transaction").path("id").asText()).isEqualTo(transactionId.toString());
         assertThat(payload.path("transaction").path("amount").asLong()).isEqualTo(4500L);
     }
+
+    @Test
+    void deduplicatesOutboxEntriesByTransactionAndConnection() {
+        Table table = IntegrationOutbox.class.getAnnotation(Table.class);
+
+        assertThat(table.uniqueConstraints()).hasSize(1);
+        assertThat(table.uniqueConstraints()[0].columnNames())
+                .containsExactly("transaction_id", "connection_id");
+    }
+
 }

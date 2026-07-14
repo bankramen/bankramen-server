@@ -50,6 +50,7 @@ public class CreatePaymentNotificationTransactionService {
         applicationEventPublisher.publishEvent(new PaymentTransactionRecordedEvent(
                 currentUserId,
                 transaction.getId(),
+                UUID.randomUUID(),
                 transaction.getDescription(),
                 transaction.getAmount(),
                 transaction.getCategory(),

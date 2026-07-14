@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -81,7 +80,8 @@ class CreatePaymentNotificationTransactionServiceTest {
 
         Transaction savedTransaction = captureSavedTransaction();
 
-        verify(applicationEventPublisher).publishEvent(any(PaymentTransactionRecordedEvent.class));
+        ArgumentCaptor<PaymentTransactionRecordedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentTransactionRecordedEvent.class);
+        verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
         assertThat(savedTransaction.getUser()).isEqualTo(currentUser);
         assertThat(savedTransaction.getCategory()).isEqualTo(Category.CAFE_SNACK);
         assertThat(savedTransaction.getType()).isEqualTo(Transaction.TransactionType.EXPENSE);
@@ -89,6 +89,9 @@ class CreatePaymentNotificationTransactionServiceTest {
         assertThat(savedTransaction.getDescription()).isEqualTo("스타벅스 강남점");
         assertThat(savedTransaction.getSource()).isEqualTo(Transaction.TransactionSource.NOTIFICATION);
         assertThat(savedTransaction.getTransactionDate()).isEqualTo(LocalDate.of(2026, 8, 12));
+        assertThat(eventCaptor.getValue().eventId())
+                .isNotNull()
+                .isNotEqualTo(eventCaptor.getValue().transactionId());
     }
 
     @Test

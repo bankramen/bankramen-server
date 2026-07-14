@@ -23,6 +23,10 @@ spring:
         format_sql: true
     show-sql: true
 
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+
   main:
     allow-bean-definition-overriding: true
 

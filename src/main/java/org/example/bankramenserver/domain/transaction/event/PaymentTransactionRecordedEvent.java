@@ -8,6 +8,7 @@ import java.util.UUID;
 public record PaymentTransactionRecordedEvent(
         UUID userId,
         UUID transactionId,
+        UUID eventId,
         String title,
         Long amount,
         Category category,

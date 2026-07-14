@@ -21,7 +21,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @Table(name = "integration_outbox", uniqueConstraints = @UniqueConstraint(
-        name = "uk_integration_outbox_event_connection", columnNames = {"event_id", "connection_id"}
+        name = "uk_integration_outbox_transaction_connection", columnNames = {"transaction_id", "connection_id"}
 ))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IntegrationOutbox extends BaseEntity {
@@ -30,6 +30,9 @@ public class IntegrationOutbox extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
+
+    @Column(name = "transaction_id", nullable = false, updatable = false)
+    private String transactionId;
 
     @Column(name = "event_id", nullable = false, updatable = false)
     private String eventId;
@@ -63,7 +66,8 @@ public class IntegrationOutbox extends BaseEntity {
     @Column(name = "delivered_at")
     private LocalDateTime deliveredAt;
 
-    private IntegrationOutbox(String eventId, String connectionId, String connectorType, String eventType, String payload) {
+    private IntegrationOutbox(String transactionId, String eventId, String connectionId, String connectorType, String eventType, String payload) {
+        this.transactionId = transactionId;
         this.eventId = eventId;
         this.connectionId = connectionId;
         this.connectorType = connectorType;
@@ -73,8 +77,8 @@ public class IntegrationOutbox extends BaseEntity {
         this.attemptCount = 0;
     }
 
-    public static IntegrationOutbox pending(String eventId, String connectionId, String connectorType, String eventType, String payload) {
-        return new IntegrationOutbox(eventId, connectionId, connectorType, eventType, payload);
+    public static IntegrationOutbox pending(String transactionId, String eventId, String connectionId, String connectorType, String eventType, String payload) {
+        return new IntegrationOutbox(transactionId, eventId, connectionId, connectorType, eventType, payload);
     }
 
     public boolean isPending() {

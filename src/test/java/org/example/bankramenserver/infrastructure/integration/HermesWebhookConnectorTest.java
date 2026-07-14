@@ -1,21 +1,30 @@
 package org.example.bankramenserver.infrastructure.integration;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
+import org.example.bankramenserver.domain.category.domain.Category;
+import org.example.bankramenserver.domain.transaction.event.PaymentTransactionRecordedEvent;
 import org.example.bankramenserver.infrastructure.integration.domain.IntegrationConnectionProperties;
 import org.example.bankramenserver.infrastructure.integration.domain.IntegrationOutbox;
+import org.example.bankramenserver.infrastructure.integration.domain.IntegrationOutboxRepository;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class HermesWebhookConnectorTest {
 
     @Test
-    void sendsSignedPayloadAndIdempotencyHeaderToConfiguredConnection() throws Exception {
+    void sendsWriterPayloadWithEventIdAsIdempotencyHeader() throws Exception {
         AtomicReference<String> body = new AtomicReference<>();
         AtomicReference<String> signature = new AtomicReference<>();
         AtomicReference<String> requestId = new AtomicReference<>();
@@ -29,20 +38,37 @@ class HermesWebhookConnectorTest {
         });
         server.start();
         try {
-            String payload = "{\"event_type\":\"transaction.created\"}";
-            IntegrationOutbox outbox = IntegrationOutbox.pending(
-                    "event-1", "hermes-personal", "HERMES_WEBHOOK", "transaction.created", payload
-            );
             IntegrationConnectionProperties.Connection connection = new IntegrationConnectionProperties.Connection(
                     "hermes-personal", "consumer", "HERMES_WEBHOOK", true, List.of("transaction.created"),
                     "http://127.0.0.1:" + server.getAddress().getPort() + "/hook", "test-secret"
             );
+            IntegrationConnectionProperties properties = new IntegrationConnectionProperties();
+            properties.setConnections(List.of(connection));
+            IntegrationOutboxRepository outboxRepository = mock(IntegrationOutboxRepository.class);
+            IntegrationOutboxWriter writer = new IntegrationOutboxWriter(outboxRepository, properties, new ObjectMapper());
+            UUID transactionId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            UUID eventId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            writer.record(new PaymentTransactionRecordedEvent(
+                    UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                    transactionId,
+                    eventId,
+                    "스타벅스",
+                    4500L,
+                    Category.CAFE_SNACK,
+                    LocalDate.of(2026, 7, 11)
+            ));
+            org.mockito.ArgumentCaptor<IntegrationOutbox> outboxCaptor = org.mockito.ArgumentCaptor.forClass(IntegrationOutbox.class);
+            verify(outboxRepository).save(outboxCaptor.capture());
+            IntegrationOutbox outbox = outboxCaptor.getValue();
 
             new HermesWebhookConnector().dispatch(outbox, connection);
 
-            assertThat(body.get()).isEqualTo(payload);
-            assertThat(signature.get()).isEqualTo(HermesWebhookConnector.signature(payload.getBytes(StandardCharsets.UTF_8), "test-secret"));
-            assertThat(requestId.get()).isEqualTo("event-1");
+            JsonNode payload = new ObjectMapper().readTree(body.get());
+            assertThat(payload.path("eventId").asText()).isEqualTo(eventId.toString());
+            assertThat(payload.path("transaction").path("id").asText()).isEqualTo(transactionId.toString());
+            assertThat(payload.path("eventId").asText()).isNotEqualTo(payload.path("transaction").path("id").asText());
+            assertThat(requestId.get()).isEqualTo(payload.path("eventId").asText());
+            assertThat(signature.get()).isEqualTo(HermesWebhookConnector.signature(body.get().getBytes(StandardCharsets.UTF_8), "test-secret"));
         } finally {
             server.stop(0);
         }

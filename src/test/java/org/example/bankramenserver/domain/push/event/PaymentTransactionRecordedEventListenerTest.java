@@ -28,10 +28,12 @@ class PaymentTransactionRecordedEventListenerTest {
         );
         UUID userId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         UUID transactionId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        UUID eventId = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
         listener.handle(new PaymentTransactionRecordedEvent(
                 userId,
                 transactionId,
+                eventId,
                 "스타벅스 강남점",
                 4500L,
                 Category.CAFE_SNACK,
